@@ -78,17 +78,32 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 .skin-preview{height:50px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
 .skin-preview svg{width:40px;height:40px}
 .skin-name{font-size:.8rem;font-weight:700}
-.lb-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card-bg);border-radius:12px;border:1px solid var(--card-border);transition:all .3s}
-.lb-rank{font-size:1.2rem;font-weight:900;color:var(--accent);width:30px;text-align:center}
+
+/* === ANIMATED LEADERBOARD === */
+.lb-item{
+    display:flex;align-items:center;gap:12px;padding:12px;
+    background:var(--card-bg);border-radius:12px;border:1px solid var(--card-border);
+    transition:all .5s cubic-bezier(.4,0,.2,1);
+    position:relative;
+}
+.lb-item.lb-me{border-color:var(--accent);background:rgba(112,0,255,.15)}
+.lb-item.lb-score-up{animation:scoreFlash .6s ease}
+@keyframes scoreFlash{0%{background:rgba(112,0,255,.3)}100%{background:var(--card-bg)}}
+.lb-item.lb-me.lb-score-up{animation:scoreFlashMe .6s ease}
+@keyframes scoreFlashMe{0%{background:rgba(112,0,255,.4)}100%{background:rgba(112,0,255,.15)}}
+.lb-rank{font-size:1.2rem;font-weight:900;color:var(--accent);width:30px;text-align:center;transition:all .3s}
 .lb-name{flex:1;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lb-score{font-weight:900;transition:all .3s}
-.lb-me{border-color:var(--accent);background:rgba(112,0,255,.15)}
+.lb-score{font-weight:900;transition:all .3s;min-width:80px;text-align:right}
 .lb-loading{text-align:center;padding:40px 20px;color:var(--text-sec)}
 .lb-total{text-align:center;padding:10px;margin-bottom:10px;background:var(--card-bg);border-radius:12px;font-size:.85rem;color:var(--text-sec);border:1px solid var(--card-border)}
 .lb-total span{color:var(--accent);font-weight:900}
 .lb-live{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;color:#00ff41;margin-left:8px}
 .lb-live-dot{width:8px;height:8px;border-radius:50%;background:#00ff41;animation:livePulse 1.5s infinite}
 @keyframes livePulse{0%,100%{opacity:1;box-shadow:0 0 4px #00ff41}50%{opacity:.4;box-shadow:0 0 8px #00ff41}}
+
+/* Контейнер для анимации FLIP */
+#lb-list-container{position:relative;display:flex;flex-direction:column;gap:8px}
+
 #rocket-btn{position:fixed;top:50%;right:-80px;z-index:50;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#ff416c,#ff4b2b);display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(255,65,108,.5);cursor:pointer;transition:right .5s cubic-bezier(.175,.885,.32,1.275)}
 #rocket-btn svg{width:32px;height:32px;fill:#fff}
 #rocket-btn.visible{right:16px}
@@ -118,31 +133,10 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 </div>
 
 <div id="game-container">
-<div class="top-bar">
-<div class="leaderboard-btn" onclick="openScreen('leaderboard')">
-<svg viewBox="0 0 24 24"><path d="M12 2L15 8H21L16 12L18 18L12 14L6 18L8 12L3 8H9L12 2Z"/></svg>Топ игроков
-</div>
-</div>
-<div class="score-area">
-<div class="score-row">
-<div class="coin-icon-small" id="header-coin-icon"></div>
-<span class="score-number" id="score-display">0</span>
-</div>
-<div class="league-label">🏆 Diamond ›</div>
-</div>
-<div class="coin-area">
-<div class="coin-wrapper" id="coin-wrapper">
-<div class="coin-3d" id="main-coin"><div class="coin-logo" id="main-coin-logo"></div></div>
-<div class="bot-indicator-bg" id="bot-bg"></div>
-<div class="bot-indicator" id="bot-indicator">🤖 БОТ РАБОТАЕТ</div>
-</div>
-</div>
-<div class="energy-section">
-<span class="energy-icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14H10L8 22L19 10H12L13 2Z"/></svg></span>
-<span class="energy-text" id="energy-current">9000</span>
-<span class="energy-max">/ <span id="energy-max">9000</span></span>
-<div class="energy-bar-bg"><div class="energy-bar-fill" id="energy-fill" style="width:100%"></div></div>
-</div>
+<div class="top-bar"><div class="leaderboard-btn" onclick="openScreen('leaderboard')"><svg viewBox="0 0 24 24"><path d="M12 2L15 8H21L16 12L18 18L12 14L6 18L8 12L3 8H9L12 2Z"/></svg>Топ игроков</div></div>
+<div class="score-area"><div class="score-row"><div class="coin-icon-small" id="header-coin-icon"></div><span class="score-number" id="score-display">0</span></div><div class="league-label">🏆 Diamond ›</div></div>
+<div class="coin-area"><div class="coin-wrapper" id="coin-wrapper"><div class="coin-3d" id="main-coin"><div class="coin-logo" id="main-coin-logo"></div></div><div class="bot-indicator-bg" id="bot-bg"></div><div class="bot-indicator" id="bot-indicator">🤖 БОТ РАБОТАЕТ</div></div></div>
+<div class="energy-section"><span class="energy-icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14H10L8 22L19 10H12L13 2Z"/></svg></span><span class="energy-text" id="energy-current">9000</span><span class="energy-max">/ <span id="energy-max">9000</span></span><div class="energy-bar-bg"><div class="energy-bar-fill" id="energy-fill" style="width:100%"></div></div></div>
 <div class="bottom-nav">
 <button class="nav-btn" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM12 6C8.69 6 6 8.69 6 12C6 15.31 8.69 18 12 18C15.31 18 18 15.31 18 12C18 8.69 15.31 6 12 6Z"/></svg>Скин</button>
 <button class="nav-btn" onclick="openScreen('tasks')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Задания</button>
@@ -154,7 +148,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 <!-- SCREENS -->
 <div id="screen-leaderboard" class="screen">
 <div class="screen-header"><button class="screen-back" onclick="closeScreen()">←</button><span class="screen-title">Топ игроков <span class="lb-live"><span class="lb-live-dot"></span>LIVE</span></span></div>
-<div class="screen-content" id="leaderboard-list"></div>
+<div class="screen-content"><div class="lb-total" id="lb-total">Всего игроков: <span>0</span></div><div id="lb-list-container"></div></div>
 <div class="bottom-nav">
 <button class="nav-btn" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Скин</button>
 <button class="nav-btn" onclick="openScreen('tasks')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Задания</button>
@@ -165,62 +159,29 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 
 <div id="screen-skins" class="screen">
 <div class="screen-header"><button class="screen-back" onclick="closeScreen()">←</button><span class="screen-title">Внешний вид</span></div>
-<div class="screen-content">
-<h3 style="color:var(--text-sec);font-size:.9rem;margin-bottom:5px">ТЕМА</h3>
-<div class="skins-grid" id="theme-grid"></div>
-<h3 style="color:var(--text-sec);font-size:.9rem;margin-top:15px;margin-bottom:5px">ИКОНКА</h3>
-<div class="skins-grid" id="icon-grid"></div>
-</div>
-<div class="bottom-nav">
-<button class="nav-btn active" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Скин</button>
-<button class="nav-btn" onclick="openScreen('tasks')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Задания</button>
-<button class="nav-btn" onclick="openScreen('mine')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Майнинг</button>
-<button class="nav-btn" onclick="openScreen('boosts')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Бусты</button>
-</div>
+<div class="screen-content"><h3 style="color:var(--text-sec);font-size:.9rem;margin-bottom:5px">ТЕМА</h3><div class="skins-grid" id="theme-grid"></div><h3 style="color:var(--text-sec);font-size:.9rem;margin-top:15px;margin-bottom:5px">ИКОНКА</h3><div class="skins-grid" id="icon-grid"></div></div>
+<div class="bottom-nav"><button class="nav-btn active" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Скин</button><button class="nav-btn" onclick="openScreen('tasks')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Задания</button><button class="nav-btn" onclick="openScreen('mine')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Майнинг</button><button class="nav-btn" onclick="openScreen('boosts')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Бусты</button></div>
 </div>
 
 <div id="screen-tasks" class="screen">
 <div class="screen-header"><button class="screen-back" onclick="closeScreen()">←</button><span class="screen-title">Задания</span></div>
 <div class="screen-content" id="tasks-list"></div>
-<div class="bottom-nav">
-<button class="nav-btn" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Скин</button>
-<button class="nav-btn active" onclick="openScreen('tasks')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Задания</button>
-<button class="nav-btn" onclick="openScreen('mine')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Майнинг</button>
-<button class="nav-btn" onclick="openScreen('boosts')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Бусты</button>
-</div>
+<div class="bottom-nav"><button class="nav-btn" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Скин</button><button class="nav-btn active" onclick="openScreen('tasks')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Задания</button><button class="nav-btn" onclick="openScreen('mine')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Майнинг</button><button class="nav-btn" onclick="openScreen('boosts')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Бусты</button></div>
 </div>
 
 <div id="screen-mine" class="screen">
 <div class="screen-header"><button class="screen-back" onclick="closeScreen()">←</button><span class="screen-title">Майнинг</span></div>
 <div class="screen-content" id="upgrades-list"></div>
-<div class="bottom-nav">
-<button class="nav-btn" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Скин</button>
-<button class="nav-btn" onclick="openScreen('tasks')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Задания</button>
-<button class="nav-btn active" onclick="openScreen('mine')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Майнинг</button>
-<button class="nav-btn" onclick="openScreen('boosts')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Бусты</button>
-</div>
+<div class="bottom-nav"><button class="nav-btn" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Скин</button><button class="nav-btn" onclick="openScreen('tasks')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Задания</button><button class="nav-btn active" onclick="openScreen('mine')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Майнинг</button><button class="nav-btn" onclick="openScreen('boosts')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Бусты</button></div>
 </div>
 
 <div id="screen-boosts" class="screen">
 <div class="screen-header"><button class="screen-back" onclick="closeScreen()">←</button><span class="screen-title">Бусты</span></div>
 <div class="screen-content">
-<div class="list-card" onclick="activateFullEnergy()">
-<div class="card-icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14H10L8 22L19 10H12L13 2Z"/></svg></div>
-<div class="card-info"><div class="card-title">Полный заряд</div><div class="card-desc">Восстановить всю энергию</div></div>
-<div class="card-action"><div class="card-cost">Бесплатно</div><div class="card-status" id="energy-boost-status" style="font-size:.7rem;color:var(--text-sec)">Доступно</div></div>
+<div class="list-card" onclick="activateFullEnergy()"><div class="card-icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14H10L8 22L19 10H12L13 2Z"/></svg></div><div class="card-info"><div class="card-title">Полный заряд</div><div class="card-desc">Восстановить всю энергию</div></div><div class="card-action"><div class="card-cost">Бесплатно</div><div class="card-status" id="energy-boost-status" style="font-size:.7rem;color:var(--text-sec)">Доступно</div></div></div>
+<div class="list-card disabled" style="opacity:.7"><div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 9 5 15C5 18 7 20 7 20H17C17 20 19 18 19 15C19 9 12 2 12 2Z"/></svg></div><div class="card-info"><div class="card-title">Мега Ракета x50</div><div class="card-desc">Появляется каждые 60 сек</div></div><div class="card-action"><div class="card-cost">Авто</div></div></div>
 </div>
-<div class="list-card disabled" style="opacity:.7">
-<div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 9 5 15C5 18 7 20 7 20H17C17 20 19 18 19 15C19 9 12 2 12 2Z"/></svg></div>
-<div class="card-info"><div class="card-title">Мега Ракета x50</div><div class="card-desc">Появляется каждые 60 сек</div></div>
-<div class="card-action"><div class="card-cost">Авто</div></div>
-</div>
-</div>
-<div class="bottom-nav">
-<button class="nav-btn" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Скин</button>
-<button class="nav-btn" onclick="openScreen('tasks')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Задания</button>
-<button class="nav-btn" onclick="openScreen('mine')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Майнинг</button>
-<button class="nav-btn active" onclick="openScreen('boosts')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Бусты</button>
-</div>
+<div class="bottom-nav"><button class="nav-btn" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Скин</button><button class="nav-btn" onclick="openScreen('tasks')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Задания</button><button class="nav-btn" onclick="openScreen('mine')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Майнинг</button><button class="nav-btn active" onclick="openScreen('boosts')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Бусты</button></div>
 </div>
 
 <div id="rocket-btn" onclick="activateBoost()"><svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 9 5 15C5 18 7 20 7 20H17C17 20 19 18 19 15C19 9 12 2 12 2ZM12 18C10.9 18 10 17.1 10 16C10 14.9 10.9 14 12 14C13.1 14 14 14.9 14 16C14 17.1 13.1 18 12 18Z"/></svg></div>
@@ -230,9 +191,9 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 /* ============================================================
    SERVICE WORKER
    ============================================================ */
-const SW_CODE=`let lastTick=Date.now(),clickPower=1,botActive=false,boostActive=false;self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('message',e=>{if(e.data.type==='UPDATE'){clickPower=e.data.clickPower||1;botActive=e.data.botActive||false;boostActive=e.data.boostActive||false;lastTick=Date.now();}if(e.data.type==='GET_EARNINGS'){const now=Date.now(),diffSec=(now-lastTick)/1000,multiplier=boostActive?50:1,earned=botActive?Math.floor(diffSec*clickPower*multiplier):0;lastTick=now;e.source.postMessage({type:'EARNINGS',amount:earned,seconds:Math.floor(diffSec)});}});setInterval(()=>{if(botActive)lastTick=Date.now();},10000);`;
+const SW_CODE=`let lastTick=Date.now(),clickPower=1,botActive=false,boostActive=false;self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('message',e=>{if(e.data.type==='UPDATE'){clickPower=e.data.clickPower||1;botActive=e.data.botActive||false;boostActive=e.data.boostActive||false;lastTick=Date.now();}if(e.data.type==='GET_EARNINGS'){const now=Date.now(),diffSec=(now-lastTick)/1000,m=boostActive?50:1,earned=botActive?Math.floor(diffSec*clickPower*m):0;lastTick=now;e.source.postMessage({type:'EARNINGS',amount:earned,seconds:Math.floor(diffSec)});}});setInterval(()=>{if(botActive)lastTick=Date.now();},10000);`;
 let swReg=null;
-async function registerSW(){try{const b=new Blob([SW_CODE],{type:'application/javascript'});swReg=await navigator.serviceWorker.register(URL.createObjectURL(b));}catch(e){}}
+async function registerSW(){try{swReg=await navigator.serviceWorker.register(URL.createObjectURL(new Blob([SW_CODE],{type:'application/javascript'})));}catch(e){}}
 function updateSW(){if(swReg&&swReg.active)swReg.active.postMessage({type:'UPDATE',clickPower:state.clickPower,botActive:state.hasAutoClicker&&state.botActive,boostActive:state.boostActive});}
 async function getOfflineEarnings(){return new Promise(r=>{if(swReg&&swReg.active){const h=e=>{if(e.data.type==='EARNINGS'){navigator.serviceWorker.removeEventListener('message',h);r(e.data);}};navigator.serviceWorker.addEventListener('message',h);swReg.active.postMessage({type:'GET_EARNINGS'});setTimeout(()=>{navigator.serviceWorker.removeEventListener('message',h);r(null);},3000);}else r(null);});}
 
@@ -240,55 +201,53 @@ async function getOfflineEarnings(){return new Promise(r=>{if(swReg&&swReg.activ
    SUPABASE + REALTIME
    ============================================================ */
 const supabaseClient=window.supabase.createClient('https://ombdrdqtojyevdqylhfs.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tYmRyZHF0b2p5ZXZkcXlsaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NTkxMTUsImV4cCI6MjEwNTEzNTExNX0.XaW5iFVShW1mizWp9l3RZX7wY8jpwNJG7_OdY0_Jauk');
-async function saveScoreToCloud(n,s){try{await supabaseClient.from('leaders').upsert({username:n,score:s},{onConflict:'username'});}catch(e){}}
 
-/* === REALTIME LEADERBOARD === */
-let leadersCache=[],totalPlayersCache=0,cacheLoaded=false;
-let realtimeChannel=null;
+// Debounce для сохранения — не чаще 1 раза в 500мс
+let saveTimeout=null;
+function saveScoreToCloudDebounced(n,s){
+    clearTimeout(saveTimeout);
+    saveTimeout=setTimeout(()=>{
+        supabaseClient.from('leaders').upsert({username:n,score:s},{onConflict:'username'}).catch(()=>{});
+    },500);
+}
+// Мгновенное сохранение (для важных моментов)
+function saveScoreToCloudInstant(n,s){
+    supabaseClient.from('leaders').upsert({username:n,score:s},{onConflict:'username'}).catch(()=>{});
+}
+
+/* === REALTIME === */
+let leadersCache=[],totalPlayersCache=0,cacheLoaded=false,realtimeChannel=null;
+// Храним позиции элементов для FLIP анимации
+let lbPositions=new Map();
 
 async function preloadLeaders(){
     try{
-        const[lr,cr]=await Promise.all([
-            supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),
-            supabaseClient.from('leaders').select('*',{count:'exact',head:true})
-        ]);
-        if(lr.data)leadersCache=lr.data;
-        if(cr.count!==null)totalPlayersCache=cr.count;
-        cacheLoaded=true;
+        const[lr,cr]=await Promise.all([supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),supabaseClient.from('leaders').select('*',{count:'exact',head:true})]);
+        if(lr.data)leadersCache=lr.data;if(cr.count!==null)totalPlayersCache=cr.count;cacheLoaded=true;
     }catch(e){}
     startRealtime();
 }
 
 function startRealtime(){
     if(realtimeChannel)supabaseClient.removeChannel(realtimeChannel);
-    realtimeChannel=supabaseClient
-        .channel('leaders-live')
-        .on('postgres_changes',{event:'*',schema:'public',table:'leaders'},payload=>{
-            handleRealtimeUpdate(payload);
-        })
-        .subscribe(status=>console.log('Realtime:',status));
+    realtimeChannel=supabaseClient.channel('leaders-live').on('postgres_changes',{event:'*',schema:'public',table:'leaders'},payload=>{handleRealtimeUpdate(payload);}).subscribe();
 }
 
 function handleRealtimeUpdate(payload){
-    const n=payload.new, o=payload.old;
+    const n=payload.new,o=payload.old;
     if(payload.eventType==='INSERT'){
-        if(!leadersCache.find(l=>l.username===n.username)){
-            leadersCache.push({username:n.username,score:n.score});
-            totalPlayersCache++;
-        }
+        if(!leadersCache.find(l=>l.username===n.username)){leadersCache.push({username:n.username,score:n.score});totalPlayersCache++;}
     }else if(payload.eventType==='UPDATE'){
         const idx=leadersCache.findIndex(l=>l.username===n.username);
         if(idx!==-1)leadersCache[idx].score=n.score;
         else leadersCache.push({username:n.username,score:n.score});
     }else if(payload.eventType==='DELETE'){
-        leadersCache=leadersCache.filter(l=>l.username!==o.username);
-        totalPlayersCache=Math.max(0,totalPlayersCache-1);
+        leadersCache=leadersCache.filter(l=>l.username!==o.username);totalPlayersCache=Math.max(0,totalPlayersCache-1);
     }
     leadersCache.sort((a,b)=>b.score-a.score);
     if(leadersCache.length>20)leadersCache=leadersCache.slice(0,20);
-    // Мгновенно обновляем экран если открыт
     const lb=document.getElementById('screen-leaderboard');
-    if(lb&&lb.classList.contains('active'))renderLeadersFromCache();
+    if(lb&&lb.classList.contains('active'))renderLeadersAnimated();
 }
 
 /* ============================================================
@@ -304,33 +263,15 @@ let playerName='';
 let state={score:0,clickPower:1,energy:9000,maxEnergy:9000,regen:3,hasAutoClicker:false,botActive:true,levels:{},tasksDone:[],theme:'default',icon:'n',lastSave:Date.now(),boostActive:false,boostEndTime:0,lastEnergyBoost:0};
 
 const $=id=>document.getElementById(id);
-const els={nameScreen:$('name-screen'),nameInput:$('name-input'),nameError:$('name-error'),game:$('game-container'),score:$('score-display'),coinLogo:$('main-coin-logo'),headerIcon:$('header-coin-icon'),energyCur:$('energy-current'),energyMax:$('energy-max'),energyFill:$('energy-fill'),screens:document.querySelectorAll('.screen'),upgrades:$('upgrades-list'),tasks:$('tasks-list'),themes:$('theme-grid'),icons:$('icon-grid'),leaders:$('leaderboard-list'),rocket:$('rocket-btn'),banner:$('boost-banner'),energyStatus:$('energy-boost-status'),botIndicator:$('bot-indicator'),botBg:$('bot-bg'),mainCoin:$('main-coin')};
+const els={nameScreen:$('name-screen'),nameInput:$('name-input'),nameError:$('name-error'),game:$('game-container'),score:$('score-display'),coinLogo:$('main-coin-logo'),headerIcon:$('header-coin-icon'),energyCur:$('energy-current'),energyMax:$('energy-max'),energyFill:$('energy-fill'),screens:document.querySelectorAll('.screen'),upgrades:$('upgrades-list'),tasks:$('tasks-list'),themes:$('theme-grid'),icons:$('icon-grid'),lbContainer:$('lb-list-container'),lbTotal:$('lb-total'),rocket:$('rocket-btn'),banner:$('boost-banner'),energyStatus:$('energy-boost-status'),botIndicator:$('bot-indicator'),botBg:$('bot-bg'),mainCoin:$('main-coin')};
 
 function submitName(){const n=els.nameInput.value.trim();if(n.length<2||n.length>15){els.nameError.style.display='block';return;}playerName=n;localStorage.setItem('nova_player_name',playerName);startGame();}
 document.addEventListener('DOMContentLoaded',()=>{els.nameInput.addEventListener('keydown',e=>{if(e.key==='Enter')submitName();});registerSW();});
 
-async function startGame(){
-    els.nameScreen.style.display='none';els.game.style.display='flex';
-    applyTheme(state.theme);applyIcon(state.icon);
-    await checkOfflineEarnings();
-    updateUI();startLoops();preloadLeaders();updateSW();
-}
+async function startGame(){els.nameScreen.style.display='none';els.game.style.display='flex';applyTheme(state.theme);applyIcon(state.icon);await checkOfflineEarnings();updateUI();startLoops();preloadLeaders();updateSW();}
 
-async function checkOfflineEarnings(){
-    const sw=await getOfflineEarnings();
-    if(sw&&sw.amount>0){state.score+=sw.amount;showOfflinePopup(sw.amount,sw.seconds);return;}
-    if(state.hasAutoClicker&&state.botActive){
-        const diffSec=(Date.now()-state.lastSave)/1000;
-        if(diffSec>5){const earned=Math.floor(diffSec*state.clickPower);if(earned>0){state.score+=earned;showOfflinePopup(earned,Math.floor(diffSec));}}
-    }
-}
-
-function showOfflinePopup(amount,seconds){
-    let t;if(seconds>=86400){const d=Math.floor(seconds/86400),h=Math.floor((seconds%86400)/3600);t=d+' дн. '+h+' ч.';}else if(seconds>=3600){t=Math.floor(seconds/3600)+' ч. '+Math.floor((seconds%3600)/60)+' мин.';}else if(seconds>=60){t=Math.floor(seconds/60)+' мин. '+seconds%60+' сек.';}else{t=seconds+' сек.';}
-    const p=document.createElement('div');p.className='offline-popup';
-    p.innerHTML=`<div class="offline-box"><h2>🤖 Бот работал!</h2><p style="color:var(--text-sec)">Вы отсутствовали ${t}</p><div class="amount">+${amount.toLocaleString()} NOVA</div><button onclick="this.closest('.offline-popup').remove()">Забрать</button></div>`;
-    document.body.appendChild(p);
-}
+async function checkOfflineEarnings(){const sw=await getOfflineEarnings();if(sw&&sw.amount>0){state.score+=sw.amount;showOfflinePopup(sw.amount,sw.seconds);return;}if(state.hasAutoClicker&&state.botActive){const d=(Date.now()-state.lastSave)/1000;if(d>5){const e=Math.floor(d*state.clickPower);if(e>0){state.score+=e;showOfflinePopup(e,Math.floor(d));}}}}
+function showOfflinePopup(a,s){let t;if(s>=86400)t=Math.floor(s/86400)+' дн. '+Math.floor((s%86400)/3600)+' ч.';else if(s>=3600)t=Math.floor(s/3600)+' ч. '+Math.floor((s%3600)/60)+' мин.';else if(s>=60)t=Math.floor(s/60)+' мин. '+s%60+' сек.';else t=s+' сек.';const p=document.createElement('div');p.className='offline-popup';p.innerHTML=`<div class="offline-box"><h2>🤖 Бот работал!</h2><p style="color:var(--text-sec)">Вы отсутствовали ${t}</p><div class="amount">+${a.toLocaleString()} NOVA</div><button onclick="this.closest('.offline-popup').remove()">Забрать</button></div>`;document.body.appendChild(p);}
 
 function init(){load();const sn=localStorage.getItem('nova_player_name');if(sn){playerName=sn;startGame();}else{els.nameScreen.style.display='flex';els.game.style.display='none';setTimeout(()=>els.nameInput.focus(),300);}}
 
@@ -338,12 +279,18 @@ function startLoops(){
     setInterval(()=>{if(state.hasAutoClicker&&state.botActive){let g=state.clickPower*(state.boostActive?50:1);addScore(g);const r=els.mainCoin.getBoundingClientRect();showFloat(r.left+r.width/2+(Math.random()*40-20),r.top+r.height/2+(Math.random()*40-20),`+${Math.floor(g)}`);els.mainCoin.classList.add('coin-pressed');setTimeout(()=>els.mainCoin.classList.remove('coin-pressed'),100);}},1000);
     setInterval(()=>{if(state.energy<state.maxEnergy){state.energy=Math.min(state.maxEnergy,state.energy+state.regen);updateEnergy();}},1000);
     setInterval(()=>{save();updateSW();},5000);
-    // Сохраняем в облако каждые 2 сек для реалтайма
-    setInterval(()=>{if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));},2000);
     scheduleRocket();
 }
 
-function handleTap(e){if(state.energy<=0)return;if(e.cancelable)e.preventDefault();state.energy--;updateEnergy();let g=state.clickPower*(state.boostActive?50:1);addScore(g);let x,y;if(e.clientX&&e.clientY){x=e.clientX;y=e.clientY;}else if(e.touches&&e.touches[0]){x=e.touches[0].clientX;y=e.touches[0].clientY;}else{const r=els.mainCoin.getBoundingClientRect();x=r.left+r.width/2;y=r.top+r.height/2;}showFloat(x,y,`+${Math.floor(g)}`);els.mainCoin.classList.add('coin-pressed');setTimeout(()=>els.mainCoin.classList.remove('coin-pressed'),100);if(navigator.vibrate)navigator.vibrate(5);}
+function handleTap(e){
+    if(state.energy<=0)return;if(e.cancelable)e.preventDefault();
+    state.energy--;updateEnergy();
+    let g=state.clickPower*(state.boostActive?50:1);addScore(g);
+    // Сохраняем в облако при каждом клике (debounced 500ms)
+    if(playerName)saveScoreToCloudDebounced(playerName,Math.floor(state.score));
+    let x,y;if(e.clientX&&e.clientY){x=e.clientX;y=e.clientY;}else if(e.touches&&e.touches[0]){x=e.touches[0].clientX;y=e.touches[0].clientY;}else{const r=els.mainCoin.getBoundingClientRect();x=r.left+r.width/2;y=r.top+r.height/2;}
+    showFloat(x,y,`+${Math.floor(g)}`);els.mainCoin.classList.add('coin-pressed');setTimeout(()=>els.mainCoin.classList.remove('coin-pressed'),100);if(navigator.vibrate)navigator.vibrate(5);
+}
 function addScore(n){state.score+=n;updateScore();}
 
 function openScreen(id){els.screens.forEach(s=>s.classList.remove('active'));if(id==='main')return;const t=$(`screen-${id}`);if(t){t.classList.add('active');if(id==='mine')renderUpgrades();if(id==='tasks')renderTasks();if(id==='skins')renderSkins();if(id==='leaderboard')renderLeaders();if(id==='boosts')checkEnergyBoost();}document.querySelectorAll('.bottom-nav').forEach(nav=>{nav.querySelectorAll('.nav-btn').forEach(btn=>{btn.classList.remove('active');if(btn.getAttribute('onclick')===`openScreen('${id}')`)btn.classList.add('active');});});}
@@ -353,42 +300,131 @@ function renderUpgrades(){els.upgrades.innerHTML='';UPGRADES.forEach(u=>{const l
 function renderTasks(){els.tasks.innerHTML='';TASKS.forEach(t=>{const done=state.tasksDone.includes(t.id);const d=document.createElement('div');d.className=`list-card ${done?'disabled':''}`;d.onclick=()=>doTask(t);d.innerHTML=`<div class="card-icon" style="font-size:1.5rem">🎁</div><div class="card-info"><div class="card-title">${t.name}</div><div class="card-desc">+${t.reward.toLocaleString()}</div></div><div class="card-action"><div class="card-cost" style="color:${done?'#888':'var(--accent)'}">${done?'✅':'Забрать'}</div></div>`;els.tasks.appendChild(d);});}
 function renderSkins(){els.themes.innerHTML='';THEMES.forEach(t=>{const d=document.createElement('div');d.className=`skin-item ${state.theme===t.id?'selected':''}`;d.onclick=()=>setTheme(t.id);d.innerHTML=`<div class="skin-preview" style="background:${t.color};border-radius:50%;width:40px;height:40px"></div><div class="skin-name">${t.name}</div>`;els.themes.appendChild(d);});els.icons.innerHTML='';ICONS.forEach(i=>{const d=document.createElement('div');d.className=`skin-item ${state.icon===i.id?'selected':''}`;d.onclick=()=>setIcon(i.id);d.innerHTML=`<div class="skin-preview">${SVG_ICONS[i.id]}</div><div class="skin-name">${i.name}</div>`;els.icons.appendChild(d);});}
 
-/* === LEADERBOARD === */
-function renderLeadersFromCache(){
-    els.leaders.innerHTML='';
-    const td=document.createElement('div');td.className='lb-total';td.innerHTML=`Всего игроков: <span>${totalPlayersCache}</span>`;els.leaders.appendChild(td);
-    if(!leadersCache.length){els.leaders.innerHTML+='<div class="lb-loading">Пока нет игроков. Будьте первым!</div>';return;}
-    let myRank=-1;leadersCache.forEach((l,i)=>{if(l.username===playerName)myRank=i;});
+/* ============================================================
+   ANIMATED LEADERBOARD (FLIP technique)
+   ============================================================ */
+function renderLeadersAnimated(){
+    const container=els.lbContainer;
+    els.lbTotal.innerHTML=`Всего игроков: <span>${totalPlayersCache}</span>`;
+
+    if(!leadersCache.length){container.innerHTML='<div class="lb-loading">Пока нет игроков. Будьте первым!</div>';lbPositions.clear();return;}
+
+    // Step 1: FIRST — запоминаем текущие позиции
+    const firstPositions=new Map();
+    container.querySelectorAll('.lb-item').forEach(el=>{
+        const key=el.dataset.username;
+        if(key)firstPositions.set(key,el.getBoundingClientRect().top);
+    });
+
+    // Step 2: Обновляем DOM
+    // Проверяем, нужно ли полная перерисовка или частичная
+    const existingItems=new Set();
+    container.querySelectorAll('.lb-item').forEach(el=>existingItems.add(el.dataset.username));
+
+    const neededUsernames=new Set(leadersCache.map(l=>l.username));
+    // Добавляем "Вы" если не в топ-20
+    let myInTop=leadersCache.find(l=>l.username===playerName);
+    if(!myInTop&&playerName)neededUsernames.add('__me__');
+
+    // Удаляем лишние
+    container.querySelectorAll('.lb-item').forEach(el=>{
+        if(!neededUsernames.has(el.dataset.username))el.remove();
+    });
+
+    // Создаём/обновляем элементы в правильном порядке
+    const fragment=document.createDocumentFragment();
+    const allItems=[];
+
     leadersCache.forEach((l,i)=>{
-        const isMe=l.username===playerName;const d=document.createElement('div');d.className='lb-item'+(isMe?' lb-me':'');
+        const isMe=l.username===playerName;
+        let el=container.querySelector(`[data-username="${CSS.escape(l.username)}"]`);
+        if(!el){
+            el=document.createElement('div');
+            el.className='lb-item'+(isMe?' lb-me':'');
+            el.dataset.username=l.username;
+            el.innerHTML=`<div class="lb-rank"></div><div class="lb-name"></div><div class="lb-score"></div>`;
+        }
+        // Обновляем данные
         let rk=i+1;if(i===0)rk='🥇';else if(i===1)rk='🥈';else if(i===2)rk='🥉';
         const dn=l.username.length>14?l.username.substring(0,12)+'..':l.username;
-        d.innerHTML=`<div class="lb-rank">${rk}</div><div class="lb-name" style="${isMe?'color:var(--accent)':''}">${dn} ${isMe?'(Вы)':''}</div><div class="lb-score">${Math.floor(l.score).toLocaleString()}</div>`;
-        els.leaders.appendChild(d);
+        el.querySelector('.lb-rank').textContent=rk;
+        el.querySelector('.lb-name').innerHTML=`${dn} ${isMe?'<span style="color:var(--accent)">(Вы)</span>':''}`;
+        el.querySelector('.lb-name').style.color=isMe?'var(--accent)':'';
+        const scoreEl=el.querySelector('.lb-score');
+        const oldScore=parseInt(scoreEl.dataset.score||'0');
+        const newScore=Math.floor(l.score);
+        scoreEl.textContent=newScore.toLocaleString();
+        scoreEl.dataset.score=newScore;
+        // Подсветка при изменении счёта
+        if(oldScore>0&&newScore!==oldScore){el.classList.add('lb-score-up');setTimeout(()=>el.classList.remove('lb-score-up'),600);}
+        // Обновляем класс
+        el.className='lb-item'+(isMe?' lb-me':'');
+        allItems.push(el);
     });
-    if(myRank===-1&&playerName){
-        els.leaders.innerHTML+='<div style="text-align:center;padding:8px;color:var(--text-sec);font-size:.8rem">...</div>';
-        const md=leadersCache.find(l=>l.username===playerName);const ms=md?md.score:state.score;
-        const mp=md?(leadersCache.filter(l=>l.score>md.score).length+1):'?';
-        const d=document.createElement('div');d.className='lb-item lb-me';
-        d.innerHTML=`<div class="lb-rank">${mp}</div><div class="lb-name" style="color:var(--accent)">${playerName} (Вы)</div><div class="lb-score">${Math.floor(ms).toLocaleString()}</div>`;
-        els.leaders.appendChild(d);
+
+    // Если игрок не в топ-20, добавляем его отдельно
+    if(!myInTop&&playerName){
+        let meEl=container.querySelector('[data-username="__me__"]');
+        if(!meEl){
+            // Разделитель
+            const sep=document.createElement('div');sep.style.cssText='text-align:center;padding:4px;color:var(--text-sec);font-size:.8rem';sep.textContent='...';sep.id='lb-separator';
+            allItems.push(sep);
+            meEl=document.createElement('div');meEl.className='lb-item lb-me';meEl.dataset.username='__me__';
+            meEl.innerHTML=`<div class="lb-rank"></div><div class="lb-name" style="color:var(--accent)"></div><div class="lb-score"></div>`;
+        }
+        const myScore=Math.floor(state.score);
+        const myPos=leadersCache.filter(l=>l.score>myScore).length+1;
+        meEl.querySelector('.lb-rank').textContent=myPos;
+        meEl.querySelector('.lb-name').textContent=playerName+' (Вы)';
+        const scoreEl=meEl.querySelector('.lb-score');
+        const oldS=parseInt(scoreEl.dataset.score||'0');
+        scoreEl.textContent=myScore.toLocaleString();scoreEl.dataset.score=myScore;
+        if(oldS>0&&myScore!==oldS){meEl.classList.add('lb-score-up');setTimeout(()=>meEl.classList.remove('lb-score-up'),600);}
+        allItems.push(meEl);
     }
+
+    // Вставляем в правильном порядке
+    allItems.forEach(el=>fragment.appendChild(el));
+    container.appendChild(fragment);
+
+    // Убираем старый разделитель если он есть и не нужен
+    const oldSep=container.querySelector('#lb-separator');
+    if(oldSep&&!allItems.includes(oldSep))oldSep.remove();
+
+    // Step 3: LAST — получаем новые позиции и анимируем
+    allItems.forEach(el=>{
+        const key=el.dataset.username;
+        if(!key)return;
+        const lastTop=el.getBoundingClientRect().top;
+        const firstTop=firstPositions.get(key);
+        if(firstTop!==undefined){
+            const deltaY=firstTop-lastTop;
+            if(Math.abs(deltaY)>1){
+                // FLIP: ставим элемент на старую позицию и анимируем на новую
+                el.style.transform=`translateY(${deltaY}px)`;
+                el.style.transition='none';
+                requestAnimationFrame(()=>{
+                    el.style.transition='transform .5s cubic-bezier(.4,0,.2,1)';
+                    el.style.transform='translateY(0)';
+                });
+            }
+        }
+    });
 }
 
 async function renderLeaders(){
-    if(cacheLoaded)renderLeadersFromCache();
-    else els.leaders.innerHTML='<div class="lb-loading">⏳ Загрузка...</div>';
+    if(cacheLoaded)renderLeadersAnimated();
+    else els.lbContainer.innerHTML='<div class="lb-loading">⏳ Загрузка...</div>';
     try{
         const[lr,cr]=await Promise.all([supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),supabaseClient.from('leaders').select('*',{count:'exact',head:true})]);
-        if(lr.data)leadersCache=lr.data;if(cr.count!==null)totalPlayersCache=cr.count;cacheLoaded=true;renderLeadersFromCache();
-    }catch(e){if(!cacheLoaded)els.leaders.innerHTML='<div class="lb-loading">❌ Ошибка</div>';}
+        if(lr.data)leadersCache=lr.data;if(cr.count!==null)totalPlayersCache=cr.count;cacheLoaded=true;renderLeadersAnimated();
+    }catch(e){if(!cacheLoaded)els.lbContainer.innerHTML='<div class="lb-loading">❌ Ошибка</div>';}
 }
 
-function buyUpgrade(u){const lvl=state.levels[u.id]||0,cost=Math.floor(u.baseCost*Math.pow(u.costMul,lvl));if(state.score<cost)return;state.score-=cost;if(u.oneTime){state.hasAutoClicker=true;state.botActive=true;updateBotIndicator();}else{state.levels[u.id]=lvl+1;if(u.type==='click')state.clickPower+=u.profit;if(u.type==='max')state.maxEnergy+=u.profit;if(u.type==='regen')state.regen+=u.profit;}updateUI();renderUpgrades();save();updateSW();if(navigator.vibrate)navigator.vibrate(30);}
+function buyUpgrade(u){const lvl=state.levels[u.id]||0,cost=Math.floor(u.baseCost*Math.pow(u.costMul,lvl));if(state.score<cost)return;state.score-=cost;if(u.oneTime){state.hasAutoClicker=true;state.botActive=true;updateBotIndicator();}else{state.levels[u.id]=lvl+1;if(u.type==='click')state.clickPower+=u.profit;if(u.type==='max')state.maxEnergy+=u.profit;if(u.type==='regen')state.regen+=u.profit;}updateUI();renderUpgrades();save();updateSW();if(playerName)saveScoreToCloudInstant(playerName,Math.floor(state.score));if(navigator.vibrate)navigator.vibrate(30);}
 function toggleBot(e){e.stopPropagation();state.botActive=!state.botActive;updateBotIndicator();renderUpgrades();save();updateSW();if(navigator.vibrate)navigator.vibrate(10);}
 function updateBotIndicator(){if(state.hasAutoClicker&&state.botActive){els.botIndicator.style.display='block';els.botBg.style.display='block';els.botIndicator.textContent='🤖 БОТ РАБОТАЕТ';els.botIndicator.style.filter='drop-shadow(0 0 5px rgba(255,0,255,.3))';els.botBg.style.borderColor='rgba(255,0,255,.3)';}else if(state.hasAutoClicker&&!state.botActive){els.botIndicator.style.display='block';els.botBg.style.display='block';els.botIndicator.textContent='🤖 БОТ ПАУЗА';els.botIndicator.style.filter='grayscale(1)';els.botBg.style.borderColor='rgba(255,255,255,.2)';}else{els.botIndicator.style.display='none';els.botBg.style.display='none';}}
-function doTask(t){if(state.tasksDone.includes(t.id))return;state.tasksDone.push(t.id);state.score+=t.reward;updateUI();renderTasks();save();}
+function doTask(t){if(state.tasksDone.includes(t.id))return;state.tasksDone.push(t.id);state.score+=t.reward;updateUI();renderTasks();save();if(playerName)saveScoreToCloudInstant(playerName,Math.floor(state.score));}
 function setTheme(id){state.theme=id;applyTheme(id);renderSkins();save();}
 function applyTheme(id){document.body.className='';const t=THEMES.find(x=>x.id===id);if(t&&t.class)document.body.classList.add(t.class);}
 function setIcon(id){state.icon=id;applyIcon(id);renderSkins();save();}
@@ -407,11 +443,11 @@ function updateScore(){els.score.textContent=Math.floor(state.score).toLocaleStr
 function updateEnergy(){els.energyCur.textContent=Math.floor(state.energy);els.energyMax.textContent=state.maxEnergy;els.energyFill.style.width=(state.energy/state.maxEnergy*100)+'%';}
 function showFloat(x,y,txt){const el=document.createElement('div');el.className='float-text';el.textContent=txt;el.style.left=(x-20)+'px';el.style.top=(y-20)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),700);}
 
-function save(){state.lastSave=Date.now();localStorage.setItem('nova_v16_realtime',JSON.stringify(state));if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));updateSW();}
-function load(){let raw=localStorage.getItem('nova_v16_realtime')||localStorage.getItem('nova_v15_nolimit')||localStorage.getItem('nova_v14_sw');if(!raw)return;try{const p=JSON.parse(raw);state={...state,...p};if(state.hasAutoClicker&&state.botActive===undefined)state.botActive=true;if(state.boostActive&&Date.now()>state.boostEndTime)state.boostActive=false;state.energy=Math.min(state.energy,state.maxEnergy);}catch(e){}}
+function save(){state.lastSave=Date.now();localStorage.setItem('nova_v17_animated',JSON.stringify(state));if(playerName)saveScoreToCloudDebounced(playerName,Math.floor(state.score));updateSW();}
+function load(){let raw=localStorage.getItem('nova_v17_animated')||localStorage.getItem('nova_v16_realtime')||localStorage.getItem('nova_v15_nolimit');if(!raw)return;try{const p=JSON.parse(raw);state={...state,...p};if(state.hasAutoClicker&&state.botActive===undefined)state.botActive=true;if(state.boostActive&&Date.now()>state.boostEndTime)state.boostActive=false;state.energy=Math.min(state.energy,state.maxEnergy);}catch(e){}}
 
 document.addEventListener('visibilitychange',()=>{if(document.hidden){save();updateSW();}});
-window.addEventListener('beforeunload',()=>{save();updateSW();});
+window.addEventListener('beforeunload',()=>{save();updateSW();if(playerName)saveScoreToCloudInstant(playerName,Math.floor(state.score));});
 
 els.mainCoin.addEventListener('touchstart',e=>{handleTap(e);},{passive:false});
 els.mainCoin.addEventListener('mousedown',e=>{if(e.sourceCapabilities&&e.sourceCapabilities.firesTouchEvents)return;handleTap(e);});
