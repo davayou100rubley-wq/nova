@@ -56,7 +56,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 .screen-header{padding:16px 20px 12px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--card-border)}
 .screen-back{width:36px;height:36px;border-radius:12px;background:var(--card-bg);border:1px solid var(--card-border);color:#fff;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .screen-title{font-size:1.4rem;font-weight:900}
-.screen-content{flex:1;overflow-y:auto;padding:16px;padding-bottom:calc(80px + var(--sab));display:flex;flex-direction:column;gap:12px}
+.screen-content{flex:1;overflow-y:auto;padding:16px;padding-bottom:calc(80px + var(--sab));display:flex;flex-direction:column;gap:8px}
 .list-card{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;background:var(--card-bg);border:1px solid var(--card-border);cursor:pointer;transition:all .2s}
 .list-card:active{background:rgba(255,255,255,.1);transform:scale(.98)}
 .list-card.disabled{opacity:.5;pointer-events:none}
@@ -78,32 +78,22 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 .skin-preview{height:50px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
 .skin-preview svg{width:40px;height:40px}
 .skin-name{font-size:.8rem;font-weight:700}
-
-/* === ANIMATED LEADERBOARD === */
-.lb-item{
-    display:flex;align-items:center;gap:12px;padding:12px;
-    background:var(--card-bg);border-radius:12px;border:1px solid var(--card-border);
-    transition:all .5s cubic-bezier(.4,0,.2,1);
-    position:relative;
-}
+.lb-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card-bg);border-radius:12px;border:1px solid var(--card-border);transition:transform .4s cubic-bezier(.4,0,.2,1),background .3s}
 .lb-item.lb-me{border-color:var(--accent);background:rgba(112,0,255,.15)}
-.lb-item.lb-score-up{animation:scoreFlash .6s ease}
-@keyframes scoreFlash{0%{background:rgba(112,0,255,.3)}100%{background:var(--card-bg)}}
-.lb-item.lb-me.lb-score-up{animation:scoreFlashMe .6s ease}
-@keyframes scoreFlashMe{0%{background:rgba(112,0,255,.4)}100%{background:rgba(112,0,255,.15)}}
-.lb-rank{font-size:1.2rem;font-weight:900;color:var(--accent);width:30px;text-align:center;transition:all .3s}
+.lb-item.flash{animation:lbFlash .5s ease}
+@keyframes lbFlash{0%{background:rgba(112,0,255,.35)}100%{background:var(--card-bg)}}
+.lb-item.lb-me.flash{animation:lbFlashMe .5s ease}
+@keyframes lbFlashMe{0%{background:rgba(112,0,255,.5)}100%{background:rgba(112,0,255,.15)}}
+.lb-rank{font-size:1.2rem;font-weight:900;color:var(--accent);width:30px;text-align:center}
 .lb-name{flex:1;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lb-score{font-weight:900;transition:all .3s;min-width:80px;text-align:right}
+.lb-score{font-weight:900;min-width:80px;text-align:right}
 .lb-loading{text-align:center;padding:40px 20px;color:var(--text-sec)}
-.lb-total{text-align:center;padding:10px;margin-bottom:10px;background:var(--card-bg);border-radius:12px;font-size:.85rem;color:var(--text-sec);border:1px solid var(--card-border)}
+.lb-total{text-align:center;padding:10px;margin-bottom:5px;background:var(--card-bg);border-radius:12px;font-size:.85rem;color:var(--text-sec);border:1px solid var(--card-border)}
 .lb-total span{color:var(--accent);font-weight:900}
 .lb-live{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;color:#00ff41;margin-left:8px}
 .lb-live-dot{width:8px;height:8px;border-radius:50%;background:#00ff41;animation:livePulse 1.5s infinite}
 @keyframes livePulse{0%,100%{opacity:1;box-shadow:0 0 4px #00ff41}50%{opacity:.4;box-shadow:0 0 8px #00ff41}}
-
-/* Контейнер для анимации FLIP */
-#lb-list-container{position:relative;display:flex;flex-direction:column;gap:8px}
-
+#lb-list{display:flex;flex-direction:column;gap:8px}
 #rocket-btn{position:fixed;top:50%;right:-80px;z-index:50;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#ff416c,#ff4b2b);display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(255,65,108,.5);cursor:pointer;transition:right .5s cubic-bezier(.175,.885,.32,1.275)}
 #rocket-btn svg{width:32px;height:32px;fill:#fff}
 #rocket-btn.visible{right:16px}
@@ -122,15 +112,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 </head>
 <body>
 
-<div id="name-screen">
-<div class="name-box">
-<div class="name-title">NOVA</div>
-<div class="name-subtitle">Введите имя для таблицы лидеров</div>
-<input type="text" id="name-input" class="name-input" placeholder="Ваш никнейм" maxlength="15" autocomplete="off">
-<button class="name-btn" onclick="submitName()">ИГРАТЬ</button>
-<div class="name-error" id="name-error">Имя от 2 до 15 символов</div>
-</div>
-</div>
+<div id="name-screen"><div class="name-box"><div class="name-title">NOVA</div><div class="name-subtitle">Введите имя для таблицы лидеров</div><input type="text" id="name-input" class="name-input" placeholder="Ваш никнейм" maxlength="15" autocomplete="off"><button class="name-btn" onclick="submitName()">ИГРАТЬ</button><div class="name-error" id="name-error">Имя от 2 до 15 символов</div></div></div>
 
 <div id="game-container">
 <div class="top-bar"><div class="leaderboard-btn" onclick="openScreen('leaderboard')"><svg viewBox="0 0 24 24"><path d="M12 2L15 8H21L16 12L18 18L12 14L6 18L8 12L3 8H9L12 2Z"/></svg>Топ игроков</div></div>
@@ -145,36 +127,35 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 </div>
 </div>
 
-<!-- SCREENS -->
+<!-- LEADERBOARD -->
 <div id="screen-leaderboard" class="screen">
 <div class="screen-header"><button class="screen-back" onclick="closeScreen()">←</button><span class="screen-title">Топ игроков <span class="lb-live"><span class="lb-live-dot"></span>LIVE</span></span></div>
-<div class="screen-content"><div class="lb-total" id="lb-total">Всего игроков: <span>0</span></div><div id="lb-list-container"></div></div>
-<div class="bottom-nav">
-<button class="nav-btn" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Скин</button>
-<button class="nav-btn" onclick="openScreen('tasks')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Задания</button>
-<button class="nav-btn" onclick="openScreen('mine')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Майнинг</button>
-<button class="nav-btn" onclick="openScreen('boosts')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Бусты</button>
-</div>
+<div class="screen-content"><div class="lb-total" id="lb-total">Всего игроков: <span>0</span></div><div id="lb-list"></div></div>
+<div class="bottom-nav"><button class="nav-btn" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Скин</button><button class="nav-btn" onclick="openScreen('tasks')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Задания</button><button class="nav-btn" onclick="openScreen('mine')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Майнинг</button><button class="nav-btn" onclick="openScreen('boosts')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Бусты</button></div>
 </div>
 
+<!-- SKINS -->
 <div id="screen-skins" class="screen">
 <div class="screen-header"><button class="screen-back" onclick="closeScreen()">←</button><span class="screen-title">Внешний вид</span></div>
 <div class="screen-content"><h3 style="color:var(--text-sec);font-size:.9rem;margin-bottom:5px">ТЕМА</h3><div class="skins-grid" id="theme-grid"></div><h3 style="color:var(--text-sec);font-size:.9rem;margin-top:15px;margin-bottom:5px">ИКОНКА</h3><div class="skins-grid" id="icon-grid"></div></div>
 <div class="bottom-nav"><button class="nav-btn active" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Скин</button><button class="nav-btn" onclick="openScreen('tasks')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Задания</button><button class="nav-btn" onclick="openScreen('mine')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Майнинг</button><button class="nav-btn" onclick="openScreen('boosts')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Бусты</button></div>
 </div>
 
+<!-- TASKS -->
 <div id="screen-tasks" class="screen">
 <div class="screen-header"><button class="screen-back" onclick="closeScreen()">←</button><span class="screen-title">Задания</span></div>
 <div class="screen-content" id="tasks-list"></div>
 <div class="bottom-nav"><button class="nav-btn" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Скин</button><button class="nav-btn active" onclick="openScreen('tasks')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Задания</button><button class="nav-btn" onclick="openScreen('mine')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Майнинг</button><button class="nav-btn" onclick="openScreen('boosts')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Бусты</button></div>
 </div>
 
+<!-- MINE -->
 <div id="screen-mine" class="screen">
 <div class="screen-header"><button class="screen-back" onclick="closeScreen()">←</button><span class="screen-title">Майнинг</span></div>
 <div class="screen-content" id="upgrades-list"></div>
 <div class="bottom-nav"><button class="nav-btn" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Скин</button><button class="nav-btn" onclick="openScreen('tasks')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Задания</button><button class="nav-btn active" onclick="openScreen('mine')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Майнинг</button><button class="nav-btn" onclick="openScreen('boosts')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Бусты</button></div>
 </div>
 
+<!-- BOOSTS -->
 <div id="screen-boosts" class="screen">
 <div class="screen-header"><button class="screen-back" onclick="closeScreen()">←</button><span class="screen-title">Бусты</span></div>
 <div class="screen-content">
@@ -189,69 +170,92 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 
 <script>
 /* ============================================================
-   SERVICE WORKER
+   SUPABASE
    ============================================================ */
-const SW_CODE=`let lastTick=Date.now(),clickPower=1,botActive=false,boostActive=false;self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('message',e=>{if(e.data.type==='UPDATE'){clickPower=e.data.clickPower||1;botActive=e.data.botActive||false;boostActive=e.data.boostActive||false;lastTick=Date.now();}if(e.data.type==='GET_EARNINGS'){const now=Date.now(),diffSec=(now-lastTick)/1000,m=boostActive?50:1,earned=botActive?Math.floor(diffSec*clickPower*m):0;lastTick=now;e.source.postMessage({type:'EARNINGS',amount:earned,seconds:Math.floor(diffSec)});}});setInterval(()=>{if(botActive)lastTick=Date.now();},10000);`;
-let swReg=null;
-async function registerSW(){try{swReg=await navigator.serviceWorker.register(URL.createObjectURL(new Blob([SW_CODE],{type:'application/javascript'})));}catch(e){}}
-function updateSW(){if(swReg&&swReg.active)swReg.active.postMessage({type:'UPDATE',clickPower:state.clickPower,botActive:state.hasAutoClicker&&state.botActive,boostActive:state.boostActive});}
-async function getOfflineEarnings(){return new Promise(r=>{if(swReg&&swReg.active){const h=e=>{if(e.data.type==='EARNINGS'){navigator.serviceWorker.removeEventListener('message',h);r(e.data);}};navigator.serviceWorker.addEventListener('message',h);swReg.active.postMessage({type:'GET_EARNINGS'});setTimeout(()=>{navigator.serviceWorker.removeEventListener('message',h);r(null);},3000);}else r(null);});}
+const SB_URL='https://ombdrdqtojyevdqylhfs.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tYmRyZHF0b2p5ZXZkcXlsaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NTkxMTUsImV4cCI6MjEwNTEzNTExNX0.XaW5iFVShW1mizWp9l3RZX7wY8jpwNJG7_OdY0_Jauk';
+const sb=window.supabase.createClient(SB_URL,SB_KEY);
+
+// Сохранение с debounce (не чаще 1 раза в 300мс)
+let _saveTimer=null;
+function cloudSave(name,score){
+    clearTimeout(_saveTimer);
+    _saveTimer=setTimeout(()=>{
+        sb.from('leaders').upsert({username:name,score:score},{onConflict:'username'}).then(r=>{
+            if(r.error)console.error('Save err:',r.error.message);
+        });
+    },300);
+}
+function cloudSaveNow(name,score){
+    sb.from('leaders').upsert({username:name,score:score},{onConflict:'username'}).catch(()=>{});
+}
 
 /* ============================================================
-   SUPABASE + REALTIME
+   REALTIME LEADERBOARD
    ============================================================ */
-const supabaseClient=window.supabase.createClient('https://ombdrdqtojyevdqylhfs.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tYmRyZHF0b2p5ZXZkcXlsaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NTkxMTUsImV4cCI6MjEwNTEzNTExNX0.XaW5iFVShW1mizWp9l3RZX7wY8jpwNJG7_OdY0_Jauk');
+let lbCache=[],lbTotal=0,lbReady=false;
+let prevOrder=[]; // Для анимации перемещения
 
-// Debounce для сохранения — не чаще 1 раза в 500мс
-let saveTimeout=null;
-function saveScoreToCloudDebounced(n,s){
-    clearTimeout(saveTimeout);
-    saveTimeout=setTimeout(()=>{
-        supabaseClient.from('leaders').upsert({username:n,score:s},{onConflict:'username'}).catch(()=>{});
-    },500);
-}
-// Мгновенное сохранение (для важных моментов)
-function saveScoreToCloudInstant(n,s){
-    supabaseClient.from('leaders').upsert({username:n,score:s},{onConflict:'username'}).catch(()=>{});
-}
-
-/* === REALTIME === */
-let leadersCache=[],totalPlayersCache=0,cacheLoaded=false,realtimeChannel=null;
-// Храним позиции элементов для FLIP анимации
-let lbPositions=new Map();
-
-async function preloadLeaders(){
+async function loadLeaders(){
     try{
-        const[lr,cr]=await Promise.all([supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),supabaseClient.from('leaders').select('*',{count:'exact',head:true})]);
-        if(lr.data)leadersCache=lr.data;if(cr.count!==null)totalPlayersCache=cr.count;cacheLoaded=true;
-    }catch(e){}
-    startRealtime();
+        const[data,countRes]=await Promise.all([
+            sb.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),
+            sb.from('leaders').select('*',{count:'exact',head:true})
+        ]);
+        if(data.data)lbCache=data.data;
+        if(countRes.count!==null)lbTotal=countRes.count;
+        lbReady=true;
+        console.log('✅ Leaders loaded:',lbCache.length,'players');
+    }catch(e){console.error('Load err:',e);}
+    // Подписываемся на Realtime
+    subscribeRealtime();
 }
 
-function startRealtime(){
-    if(realtimeChannel)supabaseClient.removeChannel(realtimeChannel);
-    realtimeChannel=supabaseClient.channel('leaders-live').on('postgres_changes',{event:'*',schema:'public',table:'leaders'},payload=>{handleRealtimeUpdate(payload);}).subscribe();
+function subscribeRealtime(){
+    sb.channel('lb-realtime')
+        .on('postgres_changes',{event:'*',schema:'public',table:'leaders'},payload=>{
+            console.log('📡 Realtime event:',payload.eventType,payload.new?.username);
+            applyRealtimeEvent(payload);
+        })
+        .subscribe((status,err)=>{
+            console.log('📡 Realtime status:',status,err?.message||'');
+        });
 }
 
-function handleRealtimeUpdate(payload){
+function applyRealtimeEvent(payload){
     const n=payload.new,o=payload.old;
     if(payload.eventType==='INSERT'){
-        if(!leadersCache.find(l=>l.username===n.username)){leadersCache.push({username:n.username,score:n.score});totalPlayersCache++;}
+        if(!lbCache.find(l=>l.username===n.username)){
+            lbCache.push({username:n.username,score:n.score});
+            lbTotal++;
+        }
     }else if(payload.eventType==='UPDATE'){
-        const idx=leadersCache.findIndex(l=>l.username===n.username);
-        if(idx!==-1)leadersCache[idx].score=n.score;
-        else leadersCache.push({username:n.username,score:n.score});
+        const i=lbCache.findIndex(l=>l.username===n.username);
+        if(i!==-1)lbCache[i].score=n.score;
+        else lbCache.push({username:n.username,score:n.score});
     }else if(payload.eventType==='DELETE'){
-        leadersCache=leadersCache.filter(l=>l.username!==o.username);totalPlayersCache=Math.max(0,totalPlayersCache-1);
+        lbCache=lbCache.filter(l=>l.username!==o.username);
+        lbTotal=Math.max(0,lbTotal-1);
     }
-    leadersCache.sort((a,b)=>b.score-a.score);
-    if(leadersCache.length>20)leadersCache=leadersCache.slice(0,20);
-    const lb=document.getElementById('screen-leaderboard');
-    if(lb&&lb.classList.contains('active'))renderLeadersAnimated();
+    lbCache.sort((a,b)=>b.score-a.score);
+    if(lbCache.length>20)lbCache=lbCache.slice(0,20);
+    // Обновляем экран если открыт
+    if(document.getElementById('screen-leaderboard').classList.contains('active')){
+        renderLB();
+    }
 }
 
 /* ============================================================
-   DATA
+   SERVICE WORKER
+   ============================================================ */
+const SW=`let lt=Date.now(),cp=1,ba=false,bo=false;self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('message',e=>{if(e.data.type==='U'){cp=e.data.cp||1;ba=e.data.ba||false;bo=e.data.bo||false;lt=Date.now();}if(e.data.type==='G'){const d=(Date.now()-lt)/1000,m=bo?50:1,r=ba?Math.floor(d*cp*m):0;lt=Date.now();e.source.postMessage({t:'E',a:r,s:Math.floor(d)});}});setInterval(()=>{if(ba)lt=Date.now();},10000);`;
+let swr=null;
+async function regSW(){try{swr=await navigator.serviceWorker.register(URL.createObjectURL(new Blob([SW],{type:'application/javascript'})));}catch(e){}}
+function updSW(){if(swr?.active)swr.active.postMessage({type:'U',cp:state.clickPower,ba:state.hasAutoClicker&&state.botActive,bo:state.boostActive});}
+async function getOffline(){return new Promise(r=>{if(swr?.active){const h=e=>{if(e.data.t==='E'){navigator.serviceWorker.removeEventListener('message',h);r(e.data);}};navigator.serviceWorker.addEventListener('message',h);swr.active.postMessage({type:'G'});setTimeout(()=>{navigator.serviceWorker.removeEventListener('message',h);r(null);},3000);}else r(null);});}
+
+/* ============================================================
+   GAME DATA
    ============================================================ */
 const SVG_ICONS={n:'<svg viewBox="0 0 100 100"><path d="M30 20 V80 H45 V45 L70 80 H85 V20 H70 V55 L45 20 H30 Z" fill="#fff" stroke="rgba(0,0,0,.2)" stroke-width="2"/></svg>',pizza:'<svg viewBox="0 0 100 100"><path d="M50 10 L90 80 H10 Z" fill="#ffcc00" stroke="#ff9900" stroke-width="3"/><circle cx="50" cy="40" r="5" fill="#f00"/><circle cx="40" cy="60" r="5" fill="#f00"/><circle cx="60" cy="60" r="5" fill="#f00"/></svg>',cat:'<svg viewBox="0 0 100 100"><path d="M20 30 L30 10 L40 30 H60 L70 10 L80 30 V70 Q50 90 20 70 Z" fill="#aaa" stroke="#fff" stroke-width="2"/><circle cx="35" cy="45" r="5" fill="#000"/><circle cx="65" cy="45" r="5" fill="#000"/><path d="M45 55 Q50 60 55 55" stroke="#000" stroke-width="2" fill="none"/></svg>',diamond:'<svg viewBox="0 0 100 100"><path d="M50 10 L80 40 L50 90 L20 40 Z" fill="#0ff" stroke="#fff" stroke-width="2"/><path d="M20 40 H80" stroke="#fff" stroke-width="2"/><path d="M50 10 L35 40 L50 90 L65 40 Z" fill="rgba(255,255,255,.3)"/></svg>'};
 const THEMES=[{id:'default',name:'Фиолет',class:'',color:'#7000ff'},{id:'green',name:'Матрица',class:'theme-green',color:'#00ff41'},{id:'pink',name:'Кибер',class:'theme-pink',color:'#ff00ff'}];
@@ -263,168 +267,185 @@ let playerName='';
 let state={score:0,clickPower:1,energy:9000,maxEnergy:9000,regen:3,hasAutoClicker:false,botActive:true,levels:{},tasksDone:[],theme:'default',icon:'n',lastSave:Date.now(),boostActive:false,boostEndTime:0,lastEnergyBoost:0};
 
 const $=id=>document.getElementById(id);
-const els={nameScreen:$('name-screen'),nameInput:$('name-input'),nameError:$('name-error'),game:$('game-container'),score:$('score-display'),coinLogo:$('main-coin-logo'),headerIcon:$('header-coin-icon'),energyCur:$('energy-current'),energyMax:$('energy-max'),energyFill:$('energy-fill'),screens:document.querySelectorAll('.screen'),upgrades:$('upgrades-list'),tasks:$('tasks-list'),themes:$('theme-grid'),icons:$('icon-grid'),lbContainer:$('lb-list-container'),lbTotal:$('lb-total'),rocket:$('rocket-btn'),banner:$('boost-banner'),energyStatus:$('energy-boost-status'),botIndicator:$('bot-indicator'),botBg:$('bot-bg'),mainCoin:$('main-coin')};
+const els={nameScreen:$('name-screen'),nameInput:$('name-input'),nameError:$('name-error'),game:$('game-container'),score:$('score-display'),coinLogo:$('main-coin-logo'),headerIcon:$('header-coin-icon'),energyCur:$('energy-current'),energyMax:$('energy-max'),energyFill:$('energy-fill'),screens:document.querySelectorAll('.screen'),upgrades:$('upgrades-list'),tasks:$('tasks-list'),themes:$('theme-grid'),icons:$('icon-grid'),lbList:$('lb-list'),lbTotal:$('lb-total'),rocket:$('rocket-btn'),banner:$('boost-banner'),energyStatus:$('energy-boost-status'),botInd:$('bot-indicator'),botBg:$('bot-bg'),mainCoin:$('main-coin')};
 
+/* ============================================================
+   INIT
+   ============================================================ */
 function submitName(){const n=els.nameInput.value.trim();if(n.length<2||n.length>15){els.nameError.style.display='block';return;}playerName=n;localStorage.setItem('nova_player_name',playerName);startGame();}
-document.addEventListener('DOMContentLoaded',()=>{els.nameInput.addEventListener('keydown',e=>{if(e.key==='Enter')submitName();});registerSW();});
+document.addEventListener('DOMContentLoaded',()=>{els.nameInput.addEventListener('keydown',e=>{if(e.key==='Enter')submitName();});regSW();});
 
-async function startGame(){els.nameScreen.style.display='none';els.game.style.display='flex';applyTheme(state.theme);applyIcon(state.icon);await checkOfflineEarnings();updateUI();startLoops();preloadLeaders();updateSW();}
+async function startGame(){
+    els.nameScreen.style.display='none';els.game.style.display='flex';
+    applyTheme(state.theme);applyIcon(state.icon);
+    await checkOffline();
+    updateUI();startLoops();loadLeaders();updSW();
+}
 
-async function checkOfflineEarnings(){const sw=await getOfflineEarnings();if(sw&&sw.amount>0){state.score+=sw.amount;showOfflinePopup(sw.amount,sw.seconds);return;}if(state.hasAutoClicker&&state.botActive){const d=(Date.now()-state.lastSave)/1000;if(d>5){const e=Math.floor(d*state.clickPower);if(e>0){state.score+=e;showOfflinePopup(e,Math.floor(d));}}}}
-function showOfflinePopup(a,s){let t;if(s>=86400)t=Math.floor(s/86400)+' дн. '+Math.floor((s%86400)/3600)+' ч.';else if(s>=3600)t=Math.floor(s/3600)+' ч. '+Math.floor((s%3600)/60)+' мин.';else if(s>=60)t=Math.floor(s/60)+' мин. '+s%60+' сек.';else t=s+' сек.';const p=document.createElement('div');p.className='offline-popup';p.innerHTML=`<div class="offline-box"><h2>🤖 Бот работал!</h2><p style="color:var(--text-sec)">Вы отсутствовали ${t}</p><div class="amount">+${a.toLocaleString()} NOVA</div><button onclick="this.closest('.offline-popup').remove()">Забрать</button></div>`;document.body.appendChild(p);}
+async function checkOffline(){
+    const sw=await getOffline();
+    if(sw&&sw.a>0){state.score+=sw.a;showOffline(sw.a,sw.s);return;}
+    if(state.hasAutoClicker&&state.botActive){const d=(Date.now()-state.lastSave)/1000;if(d>5){const e=Math.floor(d*state.clickPower);if(e>0){state.score+=e;showOffline(e,Math.floor(d));}}}
+}
+function showOffline(a,s){let t;if(s>=86400)t=Math.floor(s/86400)+' дн. '+Math.floor((s%86400)/3600)+' ч.';else if(s>=3600)t=Math.floor(s/3600)+' ч. '+Math.floor((s%3600)/60)+' мин.';else if(s>=60)t=Math.floor(s/60)+' мин. '+s%60+' сек.';else t=s+' сек.';const p=document.createElement('div');p.className='offline-popup';p.innerHTML=`<div class="offline-box"><h2>🤖 Бот работал!</h2><p style="color:var(--text-sec)">Вы отсутствовали ${t}</p><div class="amount">+${a.toLocaleString()} NOVA</div><button onclick="this.closest('.offline-popup').remove()">Забрать</button></div>`;document.body.appendChild(p);}
 
 function init(){load();const sn=localStorage.getItem('nova_player_name');if(sn){playerName=sn;startGame();}else{els.nameScreen.style.display='flex';els.game.style.display='none';setTimeout(()=>els.nameInput.focus(),300);}}
 
+/* ============================================================
+   LOOPS
+   ============================================================ */
 function startLoops(){
     setInterval(()=>{if(state.hasAutoClicker&&state.botActive){let g=state.clickPower*(state.boostActive?50:1);addScore(g);const r=els.mainCoin.getBoundingClientRect();showFloat(r.left+r.width/2+(Math.random()*40-20),r.top+r.height/2+(Math.random()*40-20),`+${Math.floor(g)}`);els.mainCoin.classList.add('coin-pressed');setTimeout(()=>els.mainCoin.classList.remove('coin-pressed'),100);}},1000);
     setInterval(()=>{if(state.energy<state.maxEnergy){state.energy=Math.min(state.maxEnergy,state.energy+state.regen);updateEnergy();}},1000);
-    setInterval(()=>{save();updateSW();},5000);
+    setInterval(()=>{save();updSW();},5000);
     scheduleRocket();
 }
 
+/* ============================================================
+   CORE
+   ============================================================ */
 function handleTap(e){
     if(state.energy<=0)return;if(e.cancelable)e.preventDefault();
     state.energy--;updateEnergy();
     let g=state.clickPower*(state.boostActive?50:1);addScore(g);
-    // Сохраняем в облако при каждом клике (debounced 500ms)
-    if(playerName)saveScoreToCloudDebounced(playerName,Math.floor(state.score));
+    // Отправляем в облако при каждом клике
+    if(playerName)cloudSave(playerName,Math.floor(state.score));
     let x,y;if(e.clientX&&e.clientY){x=e.clientX;y=e.clientY;}else if(e.touches&&e.touches[0]){x=e.touches[0].clientX;y=e.touches[0].clientY;}else{const r=els.mainCoin.getBoundingClientRect();x=r.left+r.width/2;y=r.top+r.height/2;}
     showFloat(x,y,`+${Math.floor(g)}`);els.mainCoin.classList.add('coin-pressed');setTimeout(()=>els.mainCoin.classList.remove('coin-pressed'),100);if(navigator.vibrate)navigator.vibrate(5);
 }
 function addScore(n){state.score+=n;updateScore();}
 
-function openScreen(id){els.screens.forEach(s=>s.classList.remove('active'));if(id==='main')return;const t=$(`screen-${id}`);if(t){t.classList.add('active');if(id==='mine')renderUpgrades();if(id==='tasks')renderTasks();if(id==='skins')renderSkins();if(id==='leaderboard')renderLeaders();if(id==='boosts')checkEnergyBoost();}document.querySelectorAll('.bottom-nav').forEach(nav=>{nav.querySelectorAll('.nav-btn').forEach(btn=>{btn.classList.remove('active');if(btn.getAttribute('onclick')===`openScreen('${id}')`)btn.classList.add('active');});});}
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function openScreen(id){els.screens.forEach(s=>s.classList.remove('active'));if(id==='main')return;const t=$(`screen-${id}`);if(t){t.classList.add('active');if(id==='mine')renderUpgrades();if(id==='tasks')renderTasks();if(id==='skins')renderSkins();if(id==='leaderboard')renderLB();if(id==='boosts')checkEnergyBoost();}document.querySelectorAll('.bottom-nav').forEach(nav=>{nav.querySelectorAll('.nav-btn').forEach(btn=>{btn.classList.remove('active');if(btn.getAttribute('onclick')===`openScreen('${id}')`)btn.classList.add('active');});});}
 function closeScreen(){els.screens.forEach(s=>s.classList.remove('active'));document.querySelectorAll('.bottom-nav').forEach(nav=>nav.querySelectorAll('.nav-btn').forEach(btn=>btn.classList.remove('active')));}
 
+/* ============================================================
+   RENDER FUNCTIONS
+   ============================================================ */
 function renderUpgrades(){els.upgrades.innerHTML='';UPGRADES.forEach(u=>{const lvl=state.levels[u.id]||0;if(u.oneTime&&state.hasAutoClicker){const d=document.createElement('div');d.className='list-card purchased';d.innerHTML=`<div class="card-icon" style="font-size:1.5rem">${u.icon}</div><div class="card-info"><div class="card-title">${u.name}</div><div class="card-desc">${u.desc}</div></div><div class="card-action"><div class="card-cost" style="color:#00ff41;font-size:.8rem">✅ Куплено</div><div class="bot-toggle ${state.botActive?'on':''}" onclick="toggleBot(event)"></div></div>`;els.upgrades.appendChild(d);return;}const cost=Math.floor(u.baseCost*Math.pow(u.costMul,lvl));const d=document.createElement('div');d.className=`list-card ${state.score>=cost?'':'disabled'}`;d.onclick=()=>buyUpgrade(u);d.innerHTML=`<div class="card-icon" style="font-size:1.5rem">${u.icon}</div><div class="card-info"><div class="card-title">${u.name}</div><div class="card-desc">${u.desc} ${u.oneTime?'':'(Lv.'+lvl+')'}</div></div><div class="card-action"><div class="card-cost">${cost.toLocaleString()}</div></div>`;els.upgrades.appendChild(d);});}
+
 function renderTasks(){els.tasks.innerHTML='';TASKS.forEach(t=>{const done=state.tasksDone.includes(t.id);const d=document.createElement('div');d.className=`list-card ${done?'disabled':''}`;d.onclick=()=>doTask(t);d.innerHTML=`<div class="card-icon" style="font-size:1.5rem">🎁</div><div class="card-info"><div class="card-title">${t.name}</div><div class="card-desc">+${t.reward.toLocaleString()}</div></div><div class="card-action"><div class="card-cost" style="color:${done?'#888':'var(--accent)'}">${done?'✅':'Забрать'}</div></div>`;els.tasks.appendChild(d);});}
+
 function renderSkins(){els.themes.innerHTML='';THEMES.forEach(t=>{const d=document.createElement('div');d.className=`skin-item ${state.theme===t.id?'selected':''}`;d.onclick=()=>setTheme(t.id);d.innerHTML=`<div class="skin-preview" style="background:${t.color};border-radius:50%;width:40px;height:40px"></div><div class="skin-name">${t.name}</div>`;els.themes.appendChild(d);});els.icons.innerHTML='';ICONS.forEach(i=>{const d=document.createElement('div');d.className=`skin-item ${state.icon===i.id?'selected':''}`;d.onclick=()=>setIcon(i.id);d.innerHTML=`<div class="skin-preview">${SVG_ICONS[i.id]}</div><div class="skin-name">${i.name}</div>`;els.icons.appendChild(d);});}
 
 /* ============================================================
-   ANIMATED LEADERBOARD (FLIP technique)
+   ANIMATED LEADERBOARD
    ============================================================ */
-function renderLeadersAnimated(){
-    const container=els.lbContainer;
-    els.lbTotal.innerHTML=`Всего игроков: <span>${totalPlayersCache}</span>`;
+function renderLB(){
+    els.lbTotal.innerHTML=`Всего игроков: <span>${lbTotal}</span>`;
+    const list=els.lbList;
 
-    if(!leadersCache.length){container.innerHTML='<div class="lb-loading">Пока нет игроков. Будьте первым!</div>';lbPositions.clear();return;}
+    if(!lbCache.length){list.innerHTML='<div class="lb-loading">Пока нет игроков. Будьте первым!</div>';prevOrder=[];return;}
 
-    // Step 1: FIRST — запоминаем текущие позиции
-    const firstPositions=new Map();
-    container.querySelectorAll('.lb-item').forEach(el=>{
-        const key=el.dataset.username;
-        if(key)firstPositions.set(key,el.getBoundingClientRect().top);
+    // Запоминаем текущие позиции (FIRST)
+    const firstRects=new Map();
+    list.querySelectorAll('.lb-item').forEach(el=>{
+        firstRects.set(el.dataset.user,el.getBoundingClientRect().top);
     });
 
-    // Step 2: Обновляем DOM
-    // Проверяем, нужно ли полная перерисовка или частичная
-    const existingItems=new Set();
-    container.querySelectorAll('.lb-item').forEach(el=>existingItems.add(el.dataset.username));
+    // Строим новый список
+    const items=[];
+    const myInTop=lbCache.find(l=>l.username===playerName);
 
-    const neededUsernames=new Set(leadersCache.map(l=>l.username));
-    // Добавляем "Вы" если не в топ-20
-    let myInTop=leadersCache.find(l=>l.username===playerName);
-    if(!myInTop&&playerName)neededUsernames.add('__me__');
-
-    // Удаляем лишние
-    container.querySelectorAll('.lb-item').forEach(el=>{
-        if(!neededUsernames.has(el.dataset.username))el.remove();
-    });
-
-    // Создаём/обновляем элементы в правильном порядке
-    const fragment=document.createDocumentFragment();
-    const allItems=[];
-
-    leadersCache.forEach((l,i)=>{
+    lbCache.forEach((l,i)=>{
         const isMe=l.username===playerName;
-        let el=container.querySelector(`[data-username="${CSS.escape(l.username)}"]`);
-        if(!el){
-            el=document.createElement('div');
-            el.className='lb-item'+(isMe?' lb-me':'');
-            el.dataset.username=l.username;
-            el.innerHTML=`<div class="lb-rank"></div><div class="lb-name"></div><div class="lb-score"></div>`;
-        }
-        // Обновляем данные
-        let rk=i+1;if(i===0)rk='🥇';else if(i===1)rk='🥈';else if(i===2)rk='🥉';
-        const dn=l.username.length>14?l.username.substring(0,12)+'..':l.username;
-        el.querySelector('.lb-rank').textContent=rk;
-        el.querySelector('.lb-name').innerHTML=`${dn} ${isMe?'<span style="color:var(--accent)">(Вы)</span>':''}`;
-        el.querySelector('.lb-name').style.color=isMe?'var(--accent)':'';
-        const scoreEl=el.querySelector('.lb-score');
-        const oldScore=parseInt(scoreEl.dataset.score||'0');
-        const newScore=Math.floor(l.score);
-        scoreEl.textContent=newScore.toLocaleString();
-        scoreEl.dataset.score=newScore;
-        // Подсветка при изменении счёта
-        if(oldScore>0&&newScore!==oldScore){el.classList.add('lb-score-up');setTimeout(()=>el.classList.remove('lb-score-up'),600);}
-        // Обновляем класс
-        el.className='lb-item'+(isMe?' lb-me':'');
-        allItems.push(el);
+        items.push({user:l.username,score:l.score,rank:i,isMe});
     });
 
-    // Если игрок не в топ-20, добавляем его отдельно
+    // Если не в топе — добавляем отдельно
     if(!myInTop&&playerName){
-        let meEl=container.querySelector('[data-username="__me__"]');
-        if(!meEl){
-            // Разделитель
-            const sep=document.createElement('div');sep.style.cssText='text-align:center;padding:4px;color:var(--text-sec);font-size:.8rem';sep.textContent='...';sep.id='lb-separator';
-            allItems.push(sep);
-            meEl=document.createElement('div');meEl.className='lb-item lb-me';meEl.dataset.username='__me__';
-            meEl.innerHTML=`<div class="lb-rank"></div><div class="lb-name" style="color:var(--accent)"></div><div class="lb-score"></div>`;
-        }
-        const myScore=Math.floor(state.score);
-        const myPos=leadersCache.filter(l=>l.score>myScore).length+1;
-        meEl.querySelector('.lb-rank').textContent=myPos;
-        meEl.querySelector('.lb-name').textContent=playerName+' (Вы)';
-        const scoreEl=meEl.querySelector('.lb-score');
-        const oldS=parseInt(scoreEl.dataset.score||'0');
-        scoreEl.textContent=myScore.toLocaleString();scoreEl.dataset.score=myScore;
-        if(oldS>0&&myScore!==oldS){meEl.classList.add('lb-score-up');setTimeout(()=>meEl.classList.remove('lb-score-up'),600);}
-        allItems.push(meEl);
+        items.push({user:'__sep__',score:0,rank:-1,isMe:false,sep:true});
+        const myPos=lbCache.filter(l=>l.score>state.score).length;
+        items.push({user:playerName,score:state.score,rank:myPos,isMe:true});
     }
 
-    // Вставляем в правильном порядке
-    allItems.forEach(el=>fragment.appendChild(el));
-    container.appendChild(fragment);
+    // Обновляем DOM
+    const newOrder=items.map(it=>it.user);
+    const existingEls=new Map();
+    list.querySelectorAll('.lb-item, .lb-sep').forEach(el=>existingEls.set(el.dataset.user||'__sep__',el));
 
-    // Убираем старый разделитель если он есть и не нужен
-    const oldSep=container.querySelector('#lb-separator');
-    if(oldSep&&!allItems.includes(oldSep))oldSep.remove();
+    // Удаляем лишние
+    existingEls.forEach((el,key)=>{if(!newOrder.includes(key))el.remove();});
 
-    // Step 3: LAST — получаем новые позиции и анимируем
-    allItems.forEach(el=>{
-        const key=el.dataset.username;
-        if(!key)return;
-        const lastTop=el.getBoundingClientRect().top;
-        const firstTop=firstPositions.get(key);
-        if(firstTop!==undefined){
-            const deltaY=firstTop-lastTop;
-            if(Math.abs(deltaY)>1){
-                // FLIP: ставим элемент на старую позицию и анимируем на новую
-                el.style.transform=`translateY(${deltaY}px)`;
-                el.style.transition='none';
-                requestAnimationFrame(()=>{
-                    el.style.transition='transform .5s cubic-bezier(.4,0,.2,1)';
-                    el.style.transform='translateY(0)';
-                });
-            }
+    // Создаём/обновляем в правильном порядке
+    const frag=document.createDocumentFragment();
+    items.forEach(it=>{
+        if(it.sep){
+            let sep=existingEls.get('__sep__');
+            if(!sep){sep=document.createElement('div');sep.className='lb-sep';sep.dataset.user='__sep__';sep.style.cssText='text-align:center;padding:4px;color:var(--text-sec);font-size:.8rem';sep.textContent='...';} 
+            frag.appendChild(sep);return;
         }
+        let el=existingEls.get(it.user);
+        const isNew=!el;
+        if(isNew){
+            el=document.createElement('div');
+            el.className='lb-item'+(it.isMe?' lb-me':'');
+            el.dataset.user=it.user;
+            el.innerHTML='<div class="lb-rank"></div><div class="lb-name"></div><div class="lb-score"></div>';
+        }
+        // Rank
+        let rk=it.rank+1;if(it.rank===0)rk='🥇';else if(it.rank===1)rk='🥈';else if(it.rank===2)rk='🥉';
+        el.querySelector('.lb-rank').textContent=rk;
+        // Name
+        const dn=it.user.length>14?it.user.substring(0,12)+'..':it.user;
+        el.querySelector('.lb-name').innerHTML=dn+(it.isMe?' <span style="color:var(--accent)">(Вы)</span>':'');
+        if(it.isMe)el.querySelector('.lb-name').style.color='var(--accent)';
+        // Score
+        const scoreEl=el.querySelector('.lb-score');
+        const oldVal=parseInt(scoreEl.dataset.v||'0');
+        const newVal=Math.floor(it.score);
+        scoreEl.textContent=newVal.toLocaleString();
+        scoreEl.dataset.v=newVal;
+        // Flash при изменении
+        if(!isNew&&oldVal>0&&oldVal!==newVal){el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');}
+        // Класс
+        el.className='lb-item'+(it.isMe?' lb-me':'');
+        frag.appendChild(el);
     });
+    list.appendChild(frag);
+
+    // Анимация перемещения (FLIP)
+    requestAnimationFrame(()=>{
+        list.querySelectorAll('.lb-item').forEach(el=>{
+            const key=el.dataset.user;
+            const firstTop=firstRects.get(key);
+            if(firstTop!==undefined){
+                const lastTop=el.getBoundingClientRect().top;
+                const dy=firstTop-lastTop;
+                if(Math.abs(dy)>2){
+                    el.style.transition='none';
+                    el.style.transform=`translateY(${dy}px)`;
+                    requestAnimationFrame(()=>{
+                        el.style.transition='transform .4s cubic-bezier(.4,0,.2,1)';
+                        el.style.transform='';
+                    });
+                }
+            }
+        });
+    });
+
+    prevOrder=newOrder;
 }
 
 async function renderLeaders(){
-    if(cacheLoaded)renderLeadersAnimated();
-    else els.lbContainer.innerHTML='<div class="lb-loading">⏳ Загрузка...</div>';
+    if(lbReady)renderLB();
+    else els.lbList.innerHTML='<div class="lb-loading">⏳ Загрузка...</div>';
+    // Принудительно обновляем из БД
     try{
-        const[lr,cr]=await Promise.all([supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),supabaseClient.from('leaders').select('*',{count:'exact',head:true})]);
-        if(lr.data)leadersCache=lr.data;if(cr.count!==null)totalPlayersCache=cr.count;cacheLoaded=true;renderLeadersAnimated();
-    }catch(e){if(!cacheLoaded)els.lbContainer.innerHTML='<div class="lb-loading">❌ Ошибка</div>';}
+        const[data,countRes]=await Promise.all([sb.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),sb.from('leaders').select('*',{count:'exact',head:true})]);
+        if(data.data)lbCache=data.data;if(countRes.count!==null)lbTotal=countRes.count;lbReady=true;renderLB();
+    }catch(e){if(!lbReady)els.lbList.innerHTML='<div class="lb-loading">❌ Ошибка. Проверьте консоль.</div>';}
 }
 
-function buyUpgrade(u){const lvl=state.levels[u.id]||0,cost=Math.floor(u.baseCost*Math.pow(u.costMul,lvl));if(state.score<cost)return;state.score-=cost;if(u.oneTime){state.hasAutoClicker=true;state.botActive=true;updateBotIndicator();}else{state.levels[u.id]=lvl+1;if(u.type==='click')state.clickPower+=u.profit;if(u.type==='max')state.maxEnergy+=u.profit;if(u.type==='regen')state.regen+=u.profit;}updateUI();renderUpgrades();save();updateSW();if(playerName)saveScoreToCloudInstant(playerName,Math.floor(state.score));if(navigator.vibrate)navigator.vibrate(30);}
-function toggleBot(e){e.stopPropagation();state.botActive=!state.botActive;updateBotIndicator();renderUpgrades();save();updateSW();if(navigator.vibrate)navigator.vibrate(10);}
-function updateBotIndicator(){if(state.hasAutoClicker&&state.botActive){els.botIndicator.style.display='block';els.botBg.style.display='block';els.botIndicator.textContent='🤖 БОТ РАБОТАЕТ';els.botIndicator.style.filter='drop-shadow(0 0 5px rgba(255,0,255,.3))';els.botBg.style.borderColor='rgba(255,0,255,.3)';}else if(state.hasAutoClicker&&!state.botActive){els.botIndicator.style.display='block';els.botBg.style.display='block';els.botIndicator.textContent='🤖 БОТ ПАУЗА';els.botIndicator.style.filter='grayscale(1)';els.botBg.style.borderColor='rgba(255,255,255,.2)';}else{els.botIndicator.style.display='none';els.botBg.style.display='none';}}
-function doTask(t){if(state.tasksDone.includes(t.id))return;state.tasksDone.push(t.id);state.score+=t.reward;updateUI();renderTasks();save();if(playerName)saveScoreToCloudInstant(playerName,Math.floor(state.score));}
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+function buyUpgrade(u){const lvl=state.levels[u.id]||0,cost=Math.floor(u.baseCost*Math.pow(u.costMul,lvl));if(state.score<cost)return;state.score-=cost;if(u.oneTime){state.hasAutoClicker=true;state.botActive=true;updateBotInd();}else{state.levels[u.id]=lvl+1;if(u.type==='click')state.clickPower+=u.profit;if(u.type==='max')state.maxEnergy+=u.profit;if(u.type==='regen')state.regen+=u.profit;}updateUI();renderUpgrades();save();updSW();if(playerName)cloudSaveNow(playerName,Math.floor(state.score));if(navigator.vibrate)navigator.vibrate(30);}
+function toggleBot(e){e.stopPropagation();state.botActive=!state.botActive;updateBotInd();renderUpgrades();save();updSW();if(navigator.vibrate)navigator.vibrate(10);}
+function updateBotInd(){if(state.hasAutoClicker&&state.botActive){els.botInd.style.display='block';els.botBg.style.display='block';els.botInd.textContent='🤖 БОТ РАБОТАЕТ';els.botInd.style.filter='drop-shadow(0 0 5px rgba(255,0,255,.3))';els.botBg.style.borderColor='rgba(255,0,255,.3)';}else if(state.hasAutoClicker&&!state.botActive){els.botInd.style.display='block';els.botBg.style.display='block';els.botInd.textContent='🤖 БОТ ПАУЗА';els.botInd.style.filter='grayscale(1)';els.botBg.style.borderColor='rgba(255,255,255,.2)';}else{els.botInd.style.display='none';els.botBg.style.display='none';}}
+function doTask(t){if(state.tasksDone.includes(t.id))return;state.tasksDone.push(t.id);state.score+=t.reward;updateUI();renderTasks();save();if(playerName)cloudSaveNow(playerName,Math.floor(state.score));}
 function setTheme(id){state.theme=id;applyTheme(id);renderSkins();save();}
 function applyTheme(id){document.body.className='';const t=THEMES.find(x=>x.id===id);if(t&&t.class)document.body.classList.add(t.class);}
 function setIcon(id){state.icon=id;applyIcon(id);renderSkins();save();}
@@ -432,26 +453,26 @@ function applyIcon(id){els.coinLogo.innerHTML=SVG_ICONS[id];els.headerIcon.inner
 function activateFullEnergy(){const now=Date.now();if(now-state.lastEnergyBoost<3600000){alert('Доступно через '+Math.ceil((3600000-(now-state.lastEnergyBoost))/60000)+' мин');return;}state.energy=state.maxEnergy;state.lastEnergyBoost=now;updateEnergy();checkEnergyBoost();save();}
 function checkEnergyBoost(){const now=Date.now();if(now-state.lastEnergyBoost<3600000){els.energyStatus.textContent=Math.ceil((3600000-(now-state.lastEnergyBoost))/60000)+' мин';els.energyStatus.parentElement.parentElement.classList.add('disabled');}else{els.energyStatus.textContent='Доступно';els.energyStatus.parentElement.parentElement.classList.remove('disabled');}}
 
-let rTimer,rHide;
-function scheduleRocket(){clearTimeout(rTimer);rTimer=setTimeout(spawnRocket,60000);}
-function spawnRocket(){els.rocket.classList.remove('hidden-el');setTimeout(()=>els.rocket.classList.add('visible'),50);rHide=setTimeout(()=>{hideRocket();scheduleRocket();},5000);}
-function activateBoost(){clearTimeout(rHide);hideRocket();state.boostActive=true;state.boostEndTime=Date.now()+5000;els.banner.textContent='⚡ BOOST x50 (5с) ⚡';els.banner.style.display='block';updateSW();if(navigator.vibrate)navigator.vibrate([80,40,80]);setTimeout(()=>{state.boostActive=false;els.banner.style.display='none';scheduleRocket();updateSW();},5000);}
+let rT,rH;
+function scheduleRocket(){clearTimeout(rT);rT=setTimeout(spawnRocket,60000);}
+function spawnRocket(){els.rocket.classList.remove('hidden-el');setTimeout(()=>els.rocket.classList.add('visible'),50);rH=setTimeout(()=>{hideRocket();scheduleRocket();},5000);}
+function activateBoost(){clearTimeout(rH);hideRocket();state.boostActive=true;state.boostEndTime=Date.now()+5000;els.banner.textContent='⚡ BOOST x50 (5с) ⚡';els.banner.style.display='block';updSW();if(navigator.vibrate)navigator.vibrate([80,40,80]);setTimeout(()=>{state.boostActive=false;els.banner.style.display='none';scheduleRocket();updSW();},5000);}
 function hideRocket(){els.rocket.classList.remove('visible');setTimeout(()=>els.rocket.classList.add('hidden-el'),500);}
 
-function updateUI(){updateScore();updateEnergy();updateBotIndicator();}
+function updateUI(){updateScore();updateEnergy();updateBotInd();}
 function updateScore(){els.score.textContent=Math.floor(state.score).toLocaleString();}
 function updateEnergy(){els.energyCur.textContent=Math.floor(state.energy);els.energyMax.textContent=state.maxEnergy;els.energyFill.style.width=(state.energy/state.maxEnergy*100)+'%';}
-function showFloat(x,y,txt){const el=document.createElement('div');el.className='float-text';el.textContent=txt;el.style.left=(x-20)+'px';el.style.top=(y-20)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),700);}
+function showFloat(x,y,t){const el=document.createElement('div');el.className='float-text';el.textContent=t;el.style.left=(x-20)+'px';el.style.top=(y-20)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),700);}
 
-function save(){state.lastSave=Date.now();localStorage.setItem('nova_v17_animated',JSON.stringify(state));if(playerName)saveScoreToCloudDebounced(playerName,Math.floor(state.score));updateSW();}
-function load(){let raw=localStorage.getItem('nova_v17_animated')||localStorage.getItem('nova_v16_realtime')||localStorage.getItem('nova_v15_nolimit');if(!raw)return;try{const p=JSON.parse(raw);state={...state,...p};if(state.hasAutoClicker&&state.botActive===undefined)state.botActive=true;if(state.boostActive&&Date.now()>state.boostEndTime)state.boostActive=false;state.energy=Math.min(state.energy,state.maxEnergy);}catch(e){}}
+function save(){state.lastSave=Date.now();localStorage.setItem('nova_v18_fix',JSON.stringify(state));if(playerName)cloudSave(playerName,Math.floor(state.score));updSW();}
+function load(){let r=localStorage.getItem('nova_v18_fix')||localStorage.getItem('nova_v17_animated')||localStorage.getItem('nova_v16_realtime');if(!r)return;try{const p=JSON.parse(r);state={...state,...p};if(state.hasAutoClicker&&state.botActive===undefined)state.botActive=true;if(state.boostActive&&Date.now()>state.boostEndTime)state.boostActive=false;state.energy=Math.min(state.energy,state.maxEnergy);}catch(e){}}
 
-document.addEventListener('visibilitychange',()=>{if(document.hidden){save();updateSW();}});
-window.addEventListener('beforeunload',()=>{save();updateSW();if(playerName)saveScoreToCloudInstant(playerName,Math.floor(state.score));});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){save();updSW();}});
+window.addEventListener('beforeunload',()=>{save();updSW();if(playerName)cloudSaveNow(playerName,Math.floor(state.score));});
 
 els.mainCoin.addEventListener('touchstart',e=>{handleTap(e);},{passive:false});
 els.mainCoin.addEventListener('mousedown',e=>{if(e.sourceCapabilities&&e.sourceCapabilities.firesTouchEvents)return;handleTap(e);});
-document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();handleTap({clientX:window.innerWidth/2,clientY:window.innerHeight/2});}});
+document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();handleTap({clientX:innerWidth/2,clientY:innerHeight/2});}});
 
 init();
 </script>
