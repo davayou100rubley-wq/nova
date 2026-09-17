@@ -31,7 +31,6 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 .coin-icon-small svg{width:20px;height:20px}
 .score-number{font-size:2.8rem;font-weight:900;letter-spacing:-1px;background:linear-gradient(180deg,#fff 30%,#d0d0ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .league-label{display:inline-flex;align-items:center;gap:6px;margin-top:4px;padding:4px 16px;border-radius:20px;background:rgba(255,255,255,.05);color:var(--accent);font-size:.85rem;font-weight:700;border:1px solid var(--card-border)}
-/* === КОНВЕРТАЦИЯ В РУБЛИ === */
 .rub-convert{text-align:center;font-size:.75rem;color:var(--text-sec);margin-top:2px;letter-spacing:.5px;opacity:.7}
 .rub-convert span{color:#b066ff;font-weight:700}
 .coin-area{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;position:relative;padding-bottom:20px}
@@ -183,13 +182,12 @@ function fmt(n){
 }
 
 /* ============================================================
-   КУРС NOVA → РУБЛИ
-   1 NOVA = пик Notcoin ($0.02896) × курс доллара (~85₽)
+   КУРС: 1 NOVA = 0.03 ₽
    ============================================================ */
-const NOVA_TO_RUB = 0.02896 * 85; // ≈ 2.46₽
+const NOVA_TO_RUB = 0.03;
 
 /* ============================================================
-   SERVICE WORKER — бот 1 клик/сек
+   SERVICE WORKER
    ============================================================ */
 const SW_CODE=`
 let lastTick=Date.now(),clickPower=1,botActive=false,boostActive=false,lastRocketTime=0;
@@ -264,8 +262,15 @@ function showOfflinePopup(amount,seconds,rockets){
     let t;if(seconds>=86400){t=Math.floor(seconds/86400)+' дн. '+Math.floor((seconds%86400)/3600)+' ч.';}else if(seconds>=3600){t=Math.floor(seconds/3600)+' ч. '+Math.floor((seconds%3600)/60)+' мин.';}else if(seconds>=60){t=Math.floor(seconds/60)+' мин. '+seconds%60+' сек.';}else{t=seconds+' сек.';}
     const rt=rockets>0?`<p style="color:#ff416c;margin-top:8px">🚀 Бот поймал ${rockets} ракеток!</p>`:'';
     const p=document.createElement('div');p.className='offline-popup';
-    p.innerHTML=`<div class="offline-box"><h2>🤖 Бот работал!</h2><p style="color:var(--text-sec)">Вы отсутствовали ${t}</p>${rt}<div class="amount">+${fmt(amount)} NOVA</div><p style="color:var(--text-sec);font-size:.8rem;margin-top:5px">≈ ${fmt(Math.floor(amount*NOVA_TO_RUB))} ₽</p><button onclick="this.closest('.offline-popup').remove()">Забрать</button></div>`;
+    p.innerHTML=`<div class="offline-box"><h2>🤖 Бот работал!</h2><p style="color:var(--text-sec)">Вы отсутствовали ${t}</p>${rt}<div class="amount">+${fmt(amount)} NOVA</div><p style="color:var(--text-sec);font-size:.8rem;margin-top:5px">≈ ${fmtRub(Math.floor(amount*NOVA_TO_RUB))} ₽</p><button onclick="this.closest('.offline-popup').remove()">Забрать</button></div>`;
     document.body.appendChild(p);
+}
+
+// Формат рублей с копейками для маленьких сумм
+function fmtRub(n){
+    if(n<1)return n.toFixed(2);
+    if(n<1000)return Math.floor(n).toString();
+    return fmt(n);
 }
 
 function init(){load();const sn=localStorage.getItem('nova_player_name');if(sn){playerName=sn;startGame();}else{els.nameScreen.style.display='flex';els.game.style.display='none';setTimeout(()=>els.nameInput.focus(),300);}}
@@ -273,7 +278,7 @@ function init(){load();const sn=localStorage.getItem('nova_player_name');if(sn){
 function startLoops(){
     setInterval(()=>{if(state.hasAutoClicker&&state.botActive){let g=state.clickPower*(state.boostActive?50:1);addScore(g);const r=els.mainCoin.getBoundingClientRect();showFloat(r.left+r.width/2+(Math.random()*40-20),r.top+r.height/2+(Math.random()*40-20),'+'+fmt(g));els.mainCoin.classList.add('coin-pressed');setTimeout(()=>els.mainCoin.classList.remove('coin-pressed'),100);}},1000);
     setInterval(()=>{if(state.energy<state.maxEnergy){state.energy=Math.min(state.maxEnergy,state.energy+state.regen);updateEnergy();}},1000);
-    setInterval(()=>{state.lastSave=Date.now();localStorage.setItem('nova_v26_rub',JSON.stringify(state));if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));updateSW();},1000);
+    setInterval(()=>{state.lastSave=Date.now();localStorage.setItem('nova_v27_rub03',JSON.stringify(state));if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));updateSW();},1000);
     scheduleRocket();
 }
 
@@ -310,7 +315,7 @@ function renderUpgrades(){
     });
 }
 
-function renderTasks(){els.tasks.innerHTML='';TASKS.forEach(t=>{const done=state.tasksDone.includes(t.id);const d=document.createElement('div');d.className=`list-card ${done?'disabled':''}`;d.onclick=()=>doTask(t);d.innerHTML=`<div class="card-icon">🎁</div><div class="card-info"><div class="card-title">${t.name}</div><div class="card-desc">+${fmt(t.reward)} NOVA ≈ ${fmt(Math.floor(t.reward*NOVA_TO_RUB))} ₽</div></div><div class="card-action"><div class="card-cost" style="color:${done?'#888':'var(--accent)'}">${done?'✅':'Забрать'}</div></div>`;els.tasks.appendChild(d);});}
+function renderTasks(){els.tasks.innerHTML='';TASKS.forEach(t=>{const done=state.tasksDone.includes(t.id);const d=document.createElement('div');d.className=`list-card ${done?'disabled':''}`;d.onclick=()=>doTask(t);d.innerHTML=`<div class="card-icon">🎁</div><div class="card-info"><div class="card-title">${t.name}</div><div class="card-desc">+${fmt(t.reward)} NOVA ≈ ${fmtRub(t.reward*NOVA_TO_RUB)} ₽</div></div><div class="card-action"><div class="card-cost" style="color:${done?'#888':'var(--accent)'}">${done?'✅':'Забрать'}</div></div>`;els.tasks.appendChild(d);});}
 function renderSkins(){els.themes.innerHTML='';THEMES.forEach(t=>{const d=document.createElement('div');d.className=`skin-item ${state.theme===t.id?'selected':''}`;d.onclick=()=>setTheme(t.id);d.innerHTML=`<div class="skin-preview" style="background:${t.color};border-radius:50%;width:40px;height:40px"></div><div class="skin-name">${t.name}</div>`;els.themes.appendChild(d);});els.icons.innerHTML='';ICONS.forEach(i=>{const d=document.createElement('div');d.className=`skin-item ${state.icon===i.id?'selected':''}`;d.onclick=()=>setIcon(i.id);d.innerHTML=`<div class="skin-preview">${SVG_ICONS[i.id]}</div><div class="skin-name">${i.name}</div>`;els.icons.appendChild(d);});}
 
 function renderLeadersFromCache(){
@@ -336,14 +341,14 @@ function checkEnergyBoost(){const now=Date.now();if(now-state.lastEnergyBoost<36
 function updateUI(){updateScore();updateEnergy();updateBotIndicator();}
 function updateScore(){
     els.score.textContent=fmt(Math.floor(state.score));
-    const rub=Math.floor(state.score*NOVA_TO_RUB);
-    els.rubDisplay.innerHTML='≈ <span>'+fmt(rub)+' ₽</span>';
+    const rub=state.score*NOVA_TO_RUB;
+    els.rubDisplay.innerHTML='≈ <span>'+fmtRub(rub)+' ₽</span>';
 }
 function updateEnergy(){els.energyCur.textContent=Math.floor(state.energy);els.energyMax.textContent=state.maxEnergy;els.energyFill.style.width=(state.energy/state.maxEnergy*100)+'%';}
 function showFloat(x,y,txt){const el=document.createElement('div');el.className='float-text';el.textContent=txt;el.style.left=(x-20)+'px';el.style.top=(y-20)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),700);}
 
-function save(){state.lastSave=Date.now();localStorage.setItem('nova_v26_rub',JSON.stringify(state));if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));updateSW();}
-function load(){let raw=localStorage.getItem('nova_v26_rub');if(!raw)return;try{const p=JSON.parse(raw);state={...state,...p};if(state.hasAutoClicker&&state.botActive===undefined)state.botActive=true;if(state.boostActive&&Date.now()>state.boostEndTime)state.boostActive=false;state.energy=Math.min(state.energy,state.maxEnergy);if(!state.lastRocketTime)state.lastRocketTime=Date.now();if(state.levels['click']>MAX_CLICK_LEVEL)state.levels['click']=MAX_CLICK_LEVEL;recalcClickPower();}catch(e){}}
+function save(){state.lastSave=Date.now();localStorage.setItem('nova_v27_rub03',JSON.stringify(state));if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));updateSW();}
+function load(){let raw=localStorage.getItem('nova_v27_rub03');if(!raw)return;try{const p=JSON.parse(raw);state={...state,...p};if(state.hasAutoClicker&&state.botActive===undefined)state.botActive=true;if(state.boostActive&&Date.now()>state.boostEndTime)state.boostActive=false;state.energy=Math.min(state.energy,state.maxEnergy);if(!state.lastRocketTime)state.lastRocketTime=Date.now();if(state.levels['click']>MAX_CLICK_LEVEL)state.levels['click']=MAX_CLICK_LEVEL;recalcClickPower();}catch(e){}}
 
 document.addEventListener('visibilitychange',()=>{if(document.hidden){save();updateSW();}});
 window.addEventListener('beforeunload',()=>{save();updateSW();});
