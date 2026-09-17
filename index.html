@@ -29,7 +29,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 .score-row{display:flex;align-items:center;justify-content:center;gap:10px}
 .coin-icon-small{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 35% 35%,var(--coin-highlight),var(--coin-base));box-shadow:0 0 10px var(--accent-glow);display:flex;align-items:center;justify-content:center}
 .coin-icon-small svg{width:20px;height:20px}
-.score-number{font-size:3.2rem;font-weight:900;letter-spacing:-1px;background:linear-gradient(180deg,#fff 30%,#d0d0ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-number{font-size:2.8rem;font-weight:900;letter-spacing:-1px;background:linear-gradient(180deg,#fff 30%,#d0d0ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .league-label{display:inline-flex;align-items:center;gap:6px;margin-top:4px;padding:4px 16px;border-radius:20px;background:rgba(255,255,255,.05);color:var(--accent);font-size:.85rem;font-weight:700;border:1px solid var(--card-border)}
 .coin-area{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;position:relative;padding-bottom:20px}
 .coin-wrapper{position:relative;cursor:pointer;width:260px;height:260px}
@@ -39,7 +39,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 .coin-logo{position:relative;z-index:2;width:100px;height:100px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 4px 6px rgba(0,0,0,.4))}
 .coin-logo svg{width:100%;height:100%}
 .coin-pressed{transform:scale(.92)!important}
-.float-text{position:fixed;color:#fff;font-weight:900;font-size:1.8rem;pointer-events:none;z-index:100;text-shadow:0 0 10px var(--accent),0 2px 4px rgba(0,0,0,.5);animation:floatUp .7s ease-out forwards}
+.float-text{position:fixed;color:#fff;font-weight:900;font-size:1.5rem;pointer-events:none;z-index:100;text-shadow:0 0 10px var(--accent),0 2px 4px rgba(0,0,0,.5);animation:floatUp .7s ease-out forwards}
 @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-120px) scale(1.3)}}
 .energy-section{padding:0 20px 8px;display:flex;align-items:center;gap:10px}
 .energy-icon svg{width:24px;height:24px;fill:#fff}
@@ -61,7 +61,8 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 .list-card:active{background:rgba(255,255,255,.1);transform:scale(.98)}
 .list-card.disabled{opacity:.5;pointer-events:none}
 .list-card.purchased{border-color:var(--accent);background:rgba(112,0,255,.1)}
-.card-icon{width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center}
+.list-card.maxed{border-color:rgba(255,65,108,.5);background:rgba(255,65,108,.08);pointer-events:none}
+.card-icon{width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:1.5rem}
 .card-icon svg{width:28px;height:28px;fill:var(--accent)}
 .card-info{flex:1}
 .card-title{font-size:.95rem;font-weight:800;margin-bottom:2px}
@@ -98,7 +99,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 .offline-box{background:var(--bg-mid);border:1px solid var(--accent);border-radius:24px;padding:30px;text-align:center;max-width:300px;width:100%;animation:popIn .3s ease}
 @keyframes popIn{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
 .offline-box h2{font-size:1.5rem;margin-bottom:10px;color:var(--accent)}
-.offline-box .amount{font-size:2rem;font-weight:900;color:#fff;margin:15px 0}
+.offline-box .amount{font-size:1.8rem;font-weight:900;color:#fff;margin:15px 0}
 .offline-box button{padding:12px 30px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-weight:bold;font-size:1rem;cursor:pointer}
 </style>
 </head>
@@ -109,7 +110,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 <div id="game-container">
 <div class="top-bar"><div class="leaderboard-btn" onclick="openScreen('leaderboard')"><svg viewBox="0 0 24 24"><path d="M12 2L15 8H21L16 12L18 18L12 14L6 18L8 12L3 8H9L12 2Z"/></svg>Топ игроков</div></div>
 <div class="score-area"><div class="score-row"><div class="coin-icon-small" id="header-coin-icon"></div><span class="score-number" id="score-display">0</span></div><div class="league-label">🏆 Diamond ›</div></div>
-<div class="coin-area"><div class="coin-wrapper" id="coin-wrapper"><div class="coin-3d" id="main-coin"><div class="coin-logo" id="main-coin-logo"></div></div><div class="bot-indicator-bg" id="bot-bg"></div><div class="bot-indicator" id="bot-indicator">🤖 БОТ 40/сек</div></div></div>
+<div class="coin-area"><div class="coin-wrapper" id="coin-wrapper"><div class="coin-3d" id="main-coin"><div class="coin-logo" id="main-coin-logo"></div></div><div class="bot-indicator-bg" id="bot-bg"></div><div class="bot-indicator" id="bot-indicator">🤖 БОТ 1/сек</div></div></div>
 <div class="energy-section"><span class="energy-icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14H10L8 22L19 10H12L13 2Z"/></svg></span><span class="energy-text" id="energy-current">9000</span><span class="energy-max">/ <span id="energy-max">9000</span></span><div class="energy-bar-bg"><div class="energy-bar-fill" id="energy-fill" style="width:100%"></div></div></div>
 <div class="bottom-nav">
 <button class="nav-btn" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM12 6C8.69 6 6 8.69 6 12C6 15.31 8.69 18 12 18C15.31 18 18 15.31 18 12C18 8.69 15.31 6 12 6Z"/></svg>Скин</button>
@@ -152,7 +153,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 <div class="screen-header"><button class="screen-back" onclick="closeScreen()">←</button><span class="screen-title">Бусты</span></div>
 <div class="screen-content">
 <div class="list-card" onclick="activateFullEnergy()"><div class="card-icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14H10L8 22L19 10H12L13 2Z"/></svg></div><div class="card-info"><div class="card-title">Полный заряд</div><div class="card-desc">Восстановить всю энергию</div></div><div class="card-action"><div class="card-cost">Бесплатно</div><div class="card-status" id="energy-boost-status" style="font-size:.7rem;color:var(--text-sec)">Доступно</div></div></div>
-<div class="list-card disabled" style="opacity:.7"><div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 9 5 15C5 18 7 20 7 20H17C17 20 19 18 19 15C19 9 12 2 12 2Z"/></svg></div><div class="card-info"><div class="card-title">Мега Ракета x50</div><div class="card-desc">Появляется каждые 60 сек. Бот ловит автоматически!</div></div><div class="card-action"><div class="card-cost">Авто</div></div></div>
+<div class="list-card disabled" style="opacity:.7"><div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 9 5 15C5 18 7 20 7 20H17C17 20 19 18 19 15C19 9 12 2 12 2Z"/></svg></div><div class="card-info"><div class="card-title">Мега Ракета x50</div><div class="card-desc">Каждые 60 сек. Бот ловит сам!</div></div><div class="card-action"><div class="card-cost">Авто</div></div></div>
 </div>
 <div class="bottom-nav"><button class="nav-btn" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Скин</button><button class="nav-btn" onclick="openScreen('tasks')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Задания</button><button class="nav-btn" onclick="openScreen('mine')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Майнинг</button><button class="nav-btn active" onclick="openScreen('boosts')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Бусты</button></div>
 </div>
@@ -162,33 +163,40 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 
 <script>
 /* ============================================================
-   SERVICE WORKER
+   ФОРМАТИРОВАНИЕ ЧИСЕЛ
+   ============================================================ */
+function fmt(n){
+    if(n<0)return '-'+fmt(-n);
+    if(n<1000)return Math.floor(n).toString();
+    const s=['','K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc'];
+    const t=Math.floor(Math.log10(n)/3);
+    if(t>=s.length)return n.toExponential(2);
+    const v=n/Math.pow(10,t*3);
+    return (v>=100?Math.floor(v):v.toFixed(1))+s[t];
+}
+
+/* ============================================================
+   SERVICE WORKER — бот 1 клик/сек
    ============================================================ */
 const SW_CODE=`
-let lastTick=Date.now(),clickPower=1,botActive=false,boostActive=false;
-let boostEnd=0,lastRocketTime=0;
+let lastTick=Date.now(),clickPower=1,botActive=false,boostActive=false,lastRocketTime=0;
 self.addEventListener('install',()=>self.skipWaiting());
 self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
 self.addEventListener('message',e=>{
     if(e.data.type==='UPDATE'){
-        clickPower=e.data.clickPower||1;
-        botActive=e.data.botActive||false;
-        boostActive=e.data.boostActive||false;
-        boostEnd=e.data.boostEnd||0;
-        lastRocketTime=e.data.lastRocketTime||0;
-        lastTick=Date.now();
+        clickPower=e.data.clickPower||1;botActive=e.data.botActive||false;
+        boostActive=e.data.boostActive||false;lastRocketTime=e.data.lastRocketTime||0;lastTick=Date.now();
     }
     if(e.data.type==='GET_EARNINGS'){
-        const now=Date.now();
-        let diffSec=(now-lastTick)/1000;
+        const now=Date.now();let diffSec=(now-lastTick)/1000;
         let rocketsCaught=0;
-        if(botActive&&lastRocketTime>0){rocketsCaught=Math.floor((now-lastRocketTime)/60000);}
+        if(botActive&&lastRocketTime>0)rocketsCaught=Math.floor((now-lastRocketTime)/60000);
         let totalEarned=0;
         if(botActive){
-            const cps=40;
+            // 1 клик в секунду
             let normalSec=diffSec-(rocketsCaught*5);if(normalSec<0)normalSec=0;
-            totalEarned+=Math.floor(normalSec*clickPower*cps);
-            totalEarned+=Math.floor(rocketsCaught*5*clickPower*cps*50);
+            totalEarned+=Math.floor(normalSec*clickPower);
+            totalEarned+=Math.floor(rocketsCaught*5*clickPower*50);
         }
         lastTick=now;lastRocketTime=now;
         e.source.postMessage({type:'EARNINGS',amount:totalEarned,seconds:Math.floor(diffSec),rockets:rocketsCaught});
@@ -198,7 +206,7 @@ setInterval(()=>{if(botActive)lastTick=Date.now();},10000);
 `;
 let swReg=null;
 async function registerSW(){try{swReg=await navigator.serviceWorker.register(URL.createObjectURL(new Blob([SW_CODE],{type:'application/javascript'})));}catch(e){}}
-function updateSW(){if(swReg&&swReg.active)swReg.active.postMessage({type:'UPDATE',clickPower:state.clickPower,botActive:state.hasAutoClicker&&state.botActive,boostActive:state.boostActive,boostEnd:state.boostEndTime,lastRocketTime:state.lastRocketTime||Date.now()});}
+function updateSW(){if(swReg&&swReg.active)swReg.active.postMessage({type:'UPDATE',clickPower:state.clickPower,botActive:state.hasAutoClicker&&state.botActive,boostActive:state.boostActive,lastRocketTime:state.lastRocketTime||Date.now()});}
 async function getOfflineEarnings(){return new Promise(r=>{if(swReg&&swReg.active){const h=e=>{if(e.data.type==='EARNINGS'){navigator.serviceWorker.removeEventListener('message',h);r(e.data);}};navigator.serviceWorker.addEventListener('message',h);swReg.active.postMessage({type:'GET_EARNINGS'});setTimeout(()=>{navigator.serviceWorker.removeEventListener('message',h);r(null);},3000);}else r(null);});}
 
 /* ============================================================
@@ -212,30 +220,31 @@ async function preloadLeaders(){try{const[lr,cr]=await Promise.all([supabaseClie
 setInterval(async()=>{try{const[lr,cr]=await Promise.all([supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),supabaseClient.from('leaders').select('*',{count:'exact',head:true})]);if(lr.data)leadersCache=lr.data;if(cr.count!==null)totalPlayersCache=cr.count;cacheLoaded=true;const lb=document.getElementById('screen-leaderboard');if(lb&&lb.classList.contains('active'))renderLeadersFromCache();}catch(e){}},1000);
 
 /* ============================================================
-   DATA — ДОРОГИЕ ЦЕНЫ + x2 МНОЖИТЕЛЬ
+   DATA
    ============================================================ */
 const SVG_ICONS={n:'<svg viewBox="0 0 100 100"><path d="M30 20 V80 H45 V45 L70 80 H85 V20 H70 V55 L45 20 H30 Z" fill="#fff" stroke="rgba(0,0,0,.2)" stroke-width="2"/></svg>',pizza:'<svg viewBox="0 0 100 100"><path d="M50 10 L90 80 H10 Z" fill="#ffcc00" stroke="#ff9900" stroke-width="3"/><circle cx="50" cy="40" r="5" fill="#f00"/><circle cx="40" cy="60" r="5" fill="#f00"/><circle cx="60" cy="60" r="5" fill="#f00"/></svg>',cat:'<svg viewBox="0 0 100 100"><path d="M20 30 L30 10 L40 30 H60 L70 10 L80 30 V70 Q50 90 20 70 Z" fill="#aaa" stroke="#fff" stroke-width="2"/><circle cx="35" cy="45" r="5" fill="#000"/><circle cx="65" cy="45" r="5" fill="#000"/><path d="M45 55 Q50 60 55 55" stroke="#000" stroke-width="2" fill="none"/></svg>',diamond:'<svg viewBox="0 0 100 100"><path d="M50 10 L80 40 L50 90 L20 40 Z" fill="#0ff" stroke="#fff" stroke-width="2"/><path d="M20 40 H80" stroke="#fff" stroke-width="2"/><path d="M50 10 L35 40 L50 90 L65 40 Z" fill="rgba(255,255,255,.3)"/></svg>'};
 const THEMES=[{id:'default',name:'Фиолет',class:'',color:'#7000ff'},{id:'green',name:'Матрица',class:'theme-green',color:'#00ff41'},{id:'pink',name:'Кибер',class:'theme-pink',color:'#ff00ff'}];
 const ICONS=[{id:'n',name:'Буква N'},{id:'pizza',name:'Пицца'},{id:'cat',name:'Кот'},{id:'diamond',name:'Алмаз'}];
 
-/* === УЛУЧШЕНИЯ — ДОРОГИЕ ЦЕНЫ ===
-   Множитель клика: x2 за уровень, цена 100 * 1.5^lvl
-   Бак энергии:   200 * 1.6^lvl
-   Регенерация:   150 * 1.5^lvl
-   Автокликер:    10000 (одноразово)
+/* === УЛУЧШЕНИЯ ===
+   Сила клика: +1 за уровень, цена 100*1.5^lvl, макс 30
+   Удвоение x2: 1B одноразово
+   Бак энергии: 200*1.6^lvl
+   Регенерация: 150*1.5^lvl
+   Автокликер: 10000 одноразово (1 клик/сек)
 */
+const MAX_CLICK_LEVEL=30;
 const UPGRADES=[
-    {id:'multiplier',icon:'✖️',name:'Множитель клика',desc:'x2 к силе клика',baseCost:100,costMul:1.5,type:'multiplier'},
+    {id:'click',icon:'👆',name:'Сила клика',desc:'+1 NOVA за клик',baseCost:100,costMul:1.5,profit:1,type:'click',maxLevel:MAX_CLICK_LEVEL},
+    {id:'double',icon:'✖️',name:'Удвоение x2',desc:'Удваивает силу клика навсегда',baseCost:1000000000,costMul:1,type:'double',oneTime:true},
     {id:'tank',icon:'🔋',name:'Бак энергии',desc:'+1000 макс.',baseCost:200,costMul:1.6,profit:1000,type:'max'},
     {id:'regen',icon:'⚡',name:'Регенерация',desc:'+1 энергия/сек',baseCost:150,costMul:1.5,profit:1,type:'regen'},
-    {id:'autoclicker',icon:'🤖',name:'Автокликер (Бот)',desc:'40 кликов/сек! Ловит ракетку!',baseCost:10000,costMul:1,profit:1,type:'auto',oneTime:true}
+    {id:'autoclicker',icon:'🤖',name:'Автокликер (Бот)',desc:'1 клик/сек. Ловит ракетку!',baseCost:10000,costMul:1,profit:1,type:'auto',oneTime:true}
 ];
 const TASKS=[{id:'sub',name:'Подписка на канал',reward:5000},{id:'inv',name:'Пригласить друга',reward:10000}];
 
-const BOT_INTERVAL=25;
-
 let playerName='';
-let state={score:0,clickPower:1,energy:9000,maxEnergy:9000,regen:3,hasAutoClicker:false,botActive:true,levels:{},tasksDone:[],theme:'default',icon:'n',lastSave:Date.now(),boostActive:false,boostEndTime:0,lastEnergyBoost:0,lastRocketTime:Date.now()};
+let state={score:0,clickPower:1,hasDouble:false,energy:9000,maxEnergy:9000,regen:3,hasAutoClicker:false,botActive:true,levels:{},tasksDone:[],theme:'default',icon:'n',lastSave:Date.now(),boostActive:false,boostEndTime:0,lastEnergyBoost:0,lastRocketTime:Date.now()};
 
 const $=id=>document.getElementById(id);
 const els={nameScreen:$('name-screen'),nameInput:$('name-input'),nameError:$('name-error'),game:$('game-container'),score:$('score-display'),coinLogo:$('main-coin-logo'),headerIcon:$('header-coin-icon'),energyCur:$('energy-current'),energyMax:$('energy-max'),energyFill:$('energy-fill'),screens:document.querySelectorAll('.screen'),upgrades:$('upgrades-list'),tasks:$('tasks-list'),themes:$('theme-grid'),icons:$('icon-grid'),leaders:$('leaderboard-list'),rocket:$('rocket-btn'),banner:$('boost-banner'),energyStatus:$('energy-boost-status'),botIndicator:$('bot-indicator'),botBg:$('bot-bg'),mainCoin:$('main-coin')};
@@ -253,10 +262,9 @@ async function checkOfflineEarnings(){
         if(diffSec>5){
             const lastRT=state.lastRocketTime||state.lastSave;
             const rocketsCaught=Math.floor((now-lastRT)/60000);
-            const cps=1000/BOT_INTERVAL;
             let normalSec=diffSec-(rocketsCaught*5);if(normalSec<0)normalSec=0;
-            let earned=Math.floor(normalSec*state.clickPower*cps);
-            earned+=Math.floor(rocketsCaught*5*state.clickPower*cps*50);
+            let earned=Math.floor(normalSec*state.clickPower);
+            earned+=Math.floor(rocketsCaught*5*state.clickPower*50);
             if(earned>0){state.score+=earned;state.lastRocketTime=now;showOfflinePopup(earned,Math.floor(diffSec),rocketsCaught);}
         }
     }
@@ -266,27 +274,40 @@ function showOfflinePopup(amount,seconds,rockets){
     let t;if(seconds>=86400){const d=Math.floor(seconds/86400),h=Math.floor((seconds%86400)/3600);t=d+' дн. '+h+' ч.';}else if(seconds>=3600){t=Math.floor(seconds/3600)+' ч. '+Math.floor((seconds%3600)/60)+' мин.';}else if(seconds>=60){t=Math.floor(seconds/60)+' мин. '+seconds%60+' сек.';}else{t=seconds+' сек.';}
     const rt=rockets>0?`<p style="color:#ff416c;margin-top:8px">🚀 Бот поймал ${rockets} ракеток!</p>`:'';
     const p=document.createElement('div');p.className='offline-popup';
-    p.innerHTML=`<div class="offline-box"><h2>🤖 Бот работал!</h2><p style="color:var(--text-sec)">Вы отсутствовали ${t}</p>${rt}<div class="amount">+${amount.toLocaleString()} NOVA</div><button onclick="this.closest('.offline-popup').remove()">Забрать</button></div>`;
+    p.innerHTML=`<div class="offline-box"><h2>🤖 Бот работал!</h2><p style="color:var(--text-sec)">Вы отсутствовали ${t}</p>${rt}<div class="amount">+${fmt(amount)} NOVA</div><button onclick="this.closest('.offline-popup').remove()">Забрать</button></div>`;
     document.body.appendChild(p);
 }
 
 function init(){load();const sn=localStorage.getItem('nova_player_name');if(sn){playerName=sn;startGame();}else{els.nameScreen.style.display='flex';els.game.style.display='none';setTimeout(()=>els.nameInput.focus(),300);}}
 
-let botFloatCounter=0;
+/* ============================================================
+   LOOPS — бот 1 клик в секунду
+   ============================================================ */
 function startLoops(){
+    // Бот: 1 клик в секунду
     setInterval(()=>{
         if(state.hasAutoClicker&&state.botActive){
-            let g=state.clickPower*(state.boostActive?50:1);addScore(g);
-            botFloatCounter++;
-            if(botFloatCounter>=10){botFloatCounter=0;const r=els.mainCoin.getBoundingClientRect();showFloat(r.left+r.width/2+(Math.random()*60-30),r.top+r.height/2+(Math.random()*60-30),`+${Math.floor(g*10)}`);}
-            if(botFloatCounter%5===0){els.mainCoin.classList.add('coin-pressed');setTimeout(()=>els.mainCoin.classList.remove('coin-pressed'),50);}
+            let g=state.clickPower*(state.boostActive?50:1);
+            addScore(g);
+            const r=els.mainCoin.getBoundingClientRect();
+            showFloat(r.left+r.width/2+(Math.random()*40-20),r.top+r.height/2+(Math.random()*40-20),'+'+fmt(g));
+            els.mainCoin.classList.add('coin-pressed');
+            setTimeout(()=>els.mainCoin.classList.remove('coin-pressed'),100);
         }
-    },BOT_INTERVAL);
+    },1000);
+
+    // Энергия
     setInterval(()=>{if(state.energy<state.maxEnergy){state.energy=Math.min(state.maxEnergy,state.energy+state.regen);updateEnergy();}},1000);
-    setInterval(()=>{state.lastSave=Date.now();localStorage.setItem('nova_v23_exp',JSON.stringify(state));if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));updateSW();},1000);
+
+    // Сохранение каждую секунду
+    setInterval(()=>{state.lastSave=Date.now();localStorage.setItem('nova_v25_clean',JSON.stringify(state));if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));updateSW();},1000);
+
     scheduleRocket();
 }
 
+/* ============================================================
+   ROCKET
+   ============================================================ */
 let rTimer,rHide;
 function scheduleRocket(){clearTimeout(rTimer);rTimer=setTimeout(spawnRocket,60000);}
 function spawnRocket(){if(state.hasAutoClicker&&state.botActive){autoCatchRocket();return;}els.rocket.classList.remove('hidden-el');setTimeout(()=>els.rocket.classList.add('visible'),50);rHide=setTimeout(()=>{hideRocket();scheduleRocket();},5000);}
@@ -294,73 +315,133 @@ function autoCatchRocket(){state.boostActive=true;state.boostEndTime=Date.now()+
 function activateBoost(){clearTimeout(rHide);hideRocket();state.boostActive=true;state.boostEndTime=Date.now()+5000;state.lastRocketTime=Date.now();els.banner.textContent='⚡ BOOST x50 (5с) ⚡';els.banner.style.display='block';updateSW();if(navigator.vibrate)navigator.vibrate([80,40,80]);setTimeout(()=>{state.boostActive=false;els.banner.style.display='none';scheduleRocket();updateSW();},5000);}
 function hideRocket(){els.rocket.classList.remove('visible');setTimeout(()=>els.rocket.classList.add('hidden-el'),500);}
 
-function handleTap(e){if(state.energy<=0)return;if(e.cancelable)e.preventDefault();state.energy--;updateEnergy();let g=state.clickPower*(state.boostActive?50:1);addScore(g);let x,y;if(e.clientX&&e.clientY){x=e.clientX;y=e.clientY;}else if(e.touches&&e.touches[0]){x=e.touches[0].clientX;y=e.touches[0].clientY;}else{const r=els.mainCoin.getBoundingClientRect();x=r.left+r.width/2;y=r.top+r.height/2;}showFloat(x,y,`+${Math.floor(g)}`);els.mainCoin.classList.add('coin-pressed');setTimeout(()=>els.mainCoin.classList.remove('coin-pressed'),100);if(navigator.vibrate)navigator.vibrate(5);}
+/* ============================================================
+   CORE
+   ============================================================ */
+function handleTap(e){if(state.energy<=0)return;if(e.cancelable)e.preventDefault();state.energy--;updateEnergy();let g=state.clickPower*(state.boostActive?50:1);addScore(g);let x,y;if(e.clientX&&e.clientY){x=e.clientX;y=e.clientY;}else if(e.touches&&e.touches[0]){x=e.touches[0].clientX;y=e.touches[0].clientY;}else{const r=els.mainCoin.getBoundingClientRect();x=r.left+r.width/2;y=r.top+r.height/2;}showFloat(x,y,'+'+fmt(g));els.mainCoin.classList.add('coin-pressed');setTimeout(()=>els.mainCoin.classList.remove('coin-pressed'),100);if(navigator.vibrate)navigator.vibrate(5);}
 function addScore(n){state.score+=n;updateScore();}
 
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
 function openScreen(id){els.screens.forEach(s=>s.classList.remove('active'));if(id==='main')return;const t=$(`screen-${id}`);if(t){t.classList.add('active');if(id==='mine')renderUpgrades();if(id==='tasks')renderTasks();if(id==='skins')renderSkins();if(id==='leaderboard')renderLeaders();if(id==='boosts')checkEnergyBoost();}document.querySelectorAll('.bottom-nav').forEach(nav=>{nav.querySelectorAll('.nav-btn').forEach(btn=>{btn.classList.remove('active');if(btn.getAttribute('onclick')===`openScreen('${id}')`)btn.classList.add('active');});});}
 function closeScreen(){els.screens.forEach(s=>s.classList.remove('active'));document.querySelectorAll('.bottom-nav').forEach(nav=>nav.querySelectorAll('.nav-btn').forEach(btn=>btn.classList.remove('active')));}
 
-/* === ЦЕНЫ — ЭКСПОНЕНЦИАЛЬНЫЕ (ДОРОГИЕ) === */
+/* ============================================================
+   ЦЕНЫ И СИЛА КЛИКА
+   ============================================================ */
 function getUpgradeCost(u){
     const lvl=state.levels[u.id]||0;
     return Math.floor(u.baseCost*Math.pow(u.costMul,lvl));
 }
 
-/* === CLICK POWER = 2^level === */
+// Сила клика = (1 + уровень_клика) × удвоение
 function recalcClickPower(){
-    const lvl=state.levels['multiplier']||0;
-    state.clickPower=Math.pow(2,lvl);
+    const clickLvl=Math.min(state.levels['click']||0, MAX_CLICK_LEVEL);
+    const base=1+clickLvl; // 1, 2, 3, 4... 31
+    const doubleMult=state.hasDouble?2:1;
+    state.clickPower=base*doubleMult;
 }
 
+/* ============================================================
+   RENDER
+   ============================================================ */
 function renderUpgrades(){
     els.upgrades.innerHTML='';
     UPGRADES.forEach(u=>{
         const lvl=state.levels[u.id]||0;
-        if(u.oneTime&&state.hasAutoClicker){
+
+        // Одноразовые купленные
+        if(u.oneTime&&u.id==='autoclicker'&&state.hasAutoClicker){
             const d=document.createElement('div');d.className='list-card purchased';
-            d.innerHTML=`<div class="card-icon" style="font-size:1.5rem">${u.icon}</div><div class="card-info"><div class="card-title">${u.name}</div><div class="card-desc">${u.desc}</div></div><div class="card-action"><div class="card-cost" style="color:#00ff41;font-size:.8rem">✅ Куплено</div><div class="bot-toggle ${state.botActive?'on':''}" onclick="toggleBot(event)"></div></div>`;
+            d.innerHTML=`<div class="card-icon">${u.icon}</div><div class="card-info"><div class="card-title">${u.name}</div><div class="card-desc">${u.desc}</div></div><div class="card-action"><div class="card-cost" style="color:#00ff41;font-size:.8rem">✅ Куплено</div><div class="bot-toggle ${state.botActive?'on':''}" onclick="toggleBot(event)"></div></div>`;
             els.upgrades.appendChild(d);return;
         }
-        const cost=getUpgradeCost(u);
-        const d=document.createElement('div');d.className=`list-card ${state.score>=cost?'':'disabled'}`;
-        d.onclick=()=>buyUpgrade(u);
-        let descText=u.desc;
-        if(u.type==='multiplier'){
-            const curMult=Math.pow(2,lvl);
-            const nextMult=Math.pow(2,lvl+1);
-            descText=`x${curMult} → x${nextMult} к клику`;
+        if(u.oneTime&&u.id==='double'&&state.hasDouble){
+            const d=document.createElement('div');d.className='list-card purchased';
+            d.innerHTML=`<div class="card-icon">${u.icon}</div><div class="card-info"><div class="card-title">${u.name}</div><div class="card-desc">Клик удвоен навсегда!</div></div><div class="card-action"><div class="card-cost" style="color:#00ff41;font-size:.8rem">✅ Куплено</div></div>`;
+            els.upgrades.appendChild(d);return;
         }
-        d.innerHTML=`<div class="card-icon" style="font-size:1.5rem">${u.icon}</div><div class="card-info"><div class="card-title">${u.name}</div><div class="card-desc">${descText} ${u.oneTime?'':'(Lv.'+lvl+')'}</div></div><div class="card-action"><div class="card-cost">${cost.toLocaleString()}</div></div>`;
+
+        // Макс уровень
+        if(u.maxLevel&&lvl>=u.maxLevel){
+            const d=document.createElement('div');d.className='list-card maxed';
+            d.innerHTML=`<div class="card-icon">${u.icon}</div><div class="card-info"><div class="card-title">${u.name}</div><div class="card-desc">МАКСИМУМ (Lv.${lvl}/${u.maxLevel}) · Сила: ${fmt(state.clickPower)}</div></div><div class="card-action"><div class="card-cost" style="color:#ff416c">🔒 МАКС</div></div>`;
+            els.upgrades.appendChild(d);return;
+        }
+
+        const cost=getUpgradeCost(u);
+        const canBuy=state.score>=cost;
+        const d=document.createElement('div');d.className=`list-card ${canBuy?'':'disabled'}`;
+        d.onclick=()=>buyUpgrade(u);
+
+        let descText=u.desc;
+        if(u.type==='click'){
+            const cur=state.clickPower;
+            const nextBase=1+lvl+1;
+            const next=nextBase*(state.hasDouble?2:1);
+            descText=`+${fmt(cur)} → +${fmt(next)} за клик`;
+        }
+        if(u.id==='double'){
+            descText=`Сила клика: ${fmt(state.clickPower)} → ${fmt(state.clickPower*2)}`;
+        }
+
+        const maxInfo=u.maxLevel?` (Lv.${lvl}/${u.maxLevel})`:u.oneTime?'':' (Lv.'+lvl+')';
+        d.innerHTML=`<div class="card-icon">${u.icon}</div><div class="card-info"><div class="card-title">${u.name}</div><div class="card-desc">${descText}${maxInfo}</div></div><div class="card-action"><div class="card-cost">${fmt(cost)}</div></div>`;
         els.upgrades.appendChild(d);
     });
 }
 
-function renderTasks(){els.tasks.innerHTML='';TASKS.forEach(t=>{const done=state.tasksDone.includes(t.id);const d=document.createElement('div');d.className=`list-card ${done?'disabled':''}`;d.onclick=()=>doTask(t);d.innerHTML=`<div class="card-icon" style="font-size:1.5rem">🎁</div><div class="card-info"><div class="card-title">${t.name}</div><div class="card-desc">+${t.reward.toLocaleString()}</div></div><div class="card-action"><div class="card-cost" style="color:${done?'#888':'var(--accent)'}">${done?'✅':'Забрать'}</div></div>`;els.tasks.appendChild(d);});}
+function renderTasks(){els.tasks.innerHTML='';TASKS.forEach(t=>{const done=state.tasksDone.includes(t.id);const d=document.createElement('div');d.className=`list-card ${done?'disabled':''}`;d.onclick=()=>doTask(t);d.innerHTML=`<div class="card-icon">🎁</div><div class="card-info"><div class="card-title">${t.name}</div><div class="card-desc">+${fmt(t.reward)}</div></div><div class="card-action"><div class="card-cost" style="color:${done?'#888':'var(--accent)'}">${done?'✅':'Забрать'}</div></div>`;els.tasks.appendChild(d);});}
 function renderSkins(){els.themes.innerHTML='';THEMES.forEach(t=>{const d=document.createElement('div');d.className=`skin-item ${state.theme===t.id?'selected':''}`;d.onclick=()=>setTheme(t.id);d.innerHTML=`<div class="skin-preview" style="background:${t.color};border-radius:50%;width:40px;height:40px"></div><div class="skin-name">${t.name}</div>`;els.themes.appendChild(d);});els.icons.innerHTML='';ICONS.forEach(i=>{const d=document.createElement('div');d.className=`skin-item ${state.icon===i.id?'selected':''}`;d.onclick=()=>setIcon(i.id);d.innerHTML=`<div class="skin-preview">${SVG_ICONS[i.id]}</div><div class="skin-name">${i.name}</div>`;els.icons.appendChild(d);});}
 
 function renderLeadersFromCache(){
     els.leaders.innerHTML='';const td=document.createElement('div');td.className='lb-total';td.innerHTML=`Всего игроков: <span>${totalPlayersCache}</span>`;els.leaders.appendChild(td);
     if(!leadersCache.length){els.leaders.innerHTML+='<div class="lb-loading">Пока нет игроков. Будьте первым!</div>';return;}
     const sorted=[...leadersCache].sort((a,b)=>b.score-a.score);let myRank=-1;sorted.forEach((l,i)=>{if(l.username===playerName)myRank=i;});
-    sorted.forEach((l,i)=>{const isMe=l.username===playerName;const d=document.createElement('div');d.className='lb-item'+(isMe?' lb-me':'');let rk=i+1;if(i===0)rk='🥇';else if(i===1)rk='🥈';else if(i===2)rk='🥉';const dn=l.username.length>14?l.username.substring(0,12)+'..':l.username;d.innerHTML=`<div class="lb-rank">${rk}</div><div class="lb-name" style="${isMe?'color:var(--accent)':''}">${dn} ${isMe?'(Вы)':''}</div><div class="lb-score">${Math.floor(l.score).toLocaleString()}</div>`;els.leaders.appendChild(d);});
-    if(myRank===-1&&playerName){els.leaders.innerHTML+='<div style="text-align:center;padding:8px;color:var(--text-sec);font-size:.8rem">...</div>';const myScore=Math.floor(state.score);const myPos=sorted.filter(l=>l.score>myScore).length+1;const d=document.createElement('div');d.className='lb-item lb-me';d.innerHTML=`<div class="lb-rank">${myPos}</div><div class="lb-name" style="color:var(--accent)">${playerName} (Вы)</div><div class="lb-score">${myScore.toLocaleString()}</div>`;els.leaders.appendChild(d);}
+    sorted.forEach((l,i)=>{const isMe=l.username===playerName;const d=document.createElement('div');d.className='lb-item'+(isMe?' lb-me':'');let rk=i+1;if(i===0)rk='🥇';else if(i===1)rk='🥈';else if(i===2)rk='🥉';const dn=l.username.length>14?l.username.substring(0,12)+'..':l.username;d.innerHTML=`<div class="lb-rank">${rk}</div><div class="lb-name" style="${isMe?'color:var(--accent)':''}">${dn} ${isMe?'(Вы)':''}</div><div class="lb-score">${fmt(Math.floor(l.score))}</div>`;els.leaders.appendChild(d);});
+    if(myRank===-1&&playerName){els.leaders.innerHTML+='<div style="text-align:center;padding:8px;color:var(--text-sec);font-size:.8rem">...</div>';const myScore=Math.floor(state.score);const myPos=sorted.filter(l=>l.score>myScore).length+1;const d=document.createElement('div');d.className='lb-item lb-me';d.innerHTML=`<div class="lb-rank">${myPos}</div><div class="lb-name" style="color:var(--accent)">${playerName} (Вы)</div><div class="lb-score">${fmt(myScore)}</div>`;els.leaders.appendChild(d);}
 }
 async function renderLeaders(){if(cacheLoaded)renderLeadersFromCache();else els.leaders.innerHTML='<div class="lb-loading">⏳ Загрузка...</div>';try{const[lr,cr]=await Promise.all([supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),supabaseClient.from('leaders').select('*',{count:'exact',head:true})]);if(lr.data)leadersCache=lr.data;if(cr.count!==null)totalPlayersCache=cr.count;cacheLoaded=true;renderLeadersFromCache();}catch(e){if(!cacheLoaded)els.leaders.innerHTML='<div class="lb-loading">❌ Ошибка</div>';}}
 
+/* ============================================================
+   ACTIONS
+   ============================================================ */
 function buyUpgrade(u){
+    const lvl=state.levels[u.id]||0;
+    if(u.maxLevel&&lvl>=u.maxLevel)return;
+    if(u.oneTime&&u.id==='double'&&state.hasDouble)return;
+    if(u.oneTime&&u.id==='autoclicker'&&state.hasAutoClicker)return;
     const cost=getUpgradeCost(u);
-    if(state.score<cost)return;state.score-=cost;
-    if(u.oneTime){state.hasAutoClicker=true;state.botActive=true;updateBotIndicator();}
-    else{
-        state.levels[u.id]=(state.levels[u.id]||0)+1;
-        if(u.type==='multiplier')recalcClickPower();
+    if(state.score<cost)return;
+    state.score-=cost;
+
+    if(u.id==='double'){
+        state.hasDouble=true;
+        recalcClickPower();
+    } else if(u.id==='autoclicker'){
+        state.hasAutoClicker=true;state.botActive=true;updateBotIndicator();
+    } else {
+        state.levels[u.id]=lvl+1;
+        if(u.type==='click')recalcClickPower();
         if(u.type==='max')state.maxEnergy+=u.profit;
         if(u.type==='regen')state.regen+=u.profit;
     }
     updateUI();renderUpgrades();save();updateSW();if(navigator.vibrate)navigator.vibrate(30);
 }
+
 function toggleBot(e){e.stopPropagation();state.botActive=!state.botActive;updateBotIndicator();renderUpgrades();save();updateSW();if(navigator.vibrate)navigator.vibrate(10);}
-function updateBotIndicator(){if(state.hasAutoClicker&&state.botActive){els.botIndicator.style.display='block';els.botBg.style.display='block';els.botIndicator.textContent='🤖 БОТ 40/сек';els.botIndicator.style.filter='drop-shadow(0 0 5px rgba(255,0,255,.3))';els.botBg.style.borderColor='rgba(255,0,255,.3)';}else if(state.hasAutoClicker&&!state.botActive){els.botIndicator.style.display='block';els.botBg.style.display='block';els.botIndicator.textContent='🤖 БОТ ПАУЗА';els.botIndicator.style.filter='grayscale(1)';els.botBg.style.borderColor='rgba(255,255,255,.2)';}else{els.botIndicator.style.display='none';els.botBg.style.display='none';}}
+function updateBotIndicator(){
+    if(state.hasAutoClicker&&state.botActive){
+        els.botIndicator.style.display='block';els.botBg.style.display='block';
+        els.botIndicator.textContent=`🤖 БОТ 1/сек · ${fmt(state.clickPower)}/с`;
+        els.botIndicator.style.filter='drop-shadow(0 0 5px rgba(255,0,255,.3))';els.botBg.style.borderColor='rgba(255,0,255,.3)';
+    }else if(state.hasAutoClicker&&!state.botActive){
+        els.botIndicator.style.display='block';els.botBg.style.display='block';
+        els.botIndicator.textContent='🤖 БОТ ПАУЗА';els.botIndicator.style.filter='grayscale(1)';els.botBg.style.borderColor='rgba(255,255,255,.2)';
+    }else{els.botIndicator.style.display='none';els.botBg.style.display='none';}
+}
+
 function doTask(t){if(state.tasksDone.includes(t.id))return;state.tasksDone.push(t.id);state.score+=t.reward;updateUI();renderTasks();save();}
 function setTheme(id){state.theme=id;applyTheme(id);renderSkins();save();}
 function applyTheme(id){document.body.className='';const t=THEMES.find(x=>x.id===id);if(t&&t.class)document.body.classList.add(t.class);}
@@ -370,13 +451,13 @@ function activateFullEnergy(){const now=Date.now();if(now-state.lastEnergyBoost<
 function checkEnergyBoost(){const now=Date.now();if(now-state.lastEnergyBoost<3600000){els.energyStatus.textContent=Math.ceil((3600000-(now-state.lastEnergyBoost))/60000)+' мин';els.energyStatus.parentElement.parentElement.classList.add('disabled');}else{els.energyStatus.textContent='Доступно';els.energyStatus.parentElement.parentElement.classList.remove('disabled');}}
 
 function updateUI(){updateScore();updateEnergy();updateBotIndicator();}
-function updateScore(){els.score.textContent=Math.floor(state.score).toLocaleString();}
+function updateScore(){els.score.textContent=fmt(Math.floor(state.score));}
 function updateEnergy(){els.energyCur.textContent=Math.floor(state.energy);els.energyMax.textContent=state.maxEnergy;els.energyFill.style.width=(state.energy/state.maxEnergy*100)+'%';}
 function showFloat(x,y,txt){const el=document.createElement('div');el.className='float-text';el.textContent=txt;el.style.left=(x-20)+'px';el.style.top=(y-20)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),700);}
 
-function save(){state.lastSave=Date.now();localStorage.setItem('nova_v23_exp',JSON.stringify(state));if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));updateSW();}
+function save(){state.lastSave=Date.now();localStorage.setItem('nova_v25_clean',JSON.stringify(state));if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));updateSW();}
 function load(){
-    let raw=localStorage.getItem('nova_v23_exp')||localStorage.getItem('nova_v22_x2')||localStorage.getItem('nova_v21_prices');
+    let raw=localStorage.getItem('nova_v25_clean');
     if(!raw)return;
     try{
         const p=JSON.parse(raw);state={...state,...p};
@@ -384,6 +465,7 @@ function load(){
         if(state.boostActive&&Date.now()>state.boostEndTime)state.boostActive=false;
         state.energy=Math.min(state.energy,state.maxEnergy);
         if(!state.lastRocketTime)state.lastRocketTime=Date.now();
+        if(state.levels['click']>MAX_CLICK_LEVEL)state.levels['click']=MAX_CLICK_LEVEL;
         recalcClickPower();
     }catch(e){}
 }
