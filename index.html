@@ -191,7 +191,7 @@ async function preloadLeaders(){
     }catch(e){}
 }
 
-// Обновление из облака КАЖДУЮ СЕКУНДУ
+// === ОБНОВЛЕНИЕ ЛИДЕРБОРДА КАЖДУЮ 1 СЕКУНДУ ===
 setInterval(async()=>{
     try{
         const[lr,cr]=await Promise.all([
@@ -201,7 +201,6 @@ setInterval(async()=>{
         if(lr.data)leadersCache=lr.data;
         if(cr.count!==null)totalPlayersCache=cr.count;
         cacheLoaded=true;
-        // Если лидерборд открыт — перерисовываем
         const lbScreen=document.getElementById('screen-leaderboard');
         if(lbScreen&&lbScreen.classList.contains('active'))renderLeadersFromCache();
     }catch(e){}
@@ -251,9 +250,17 @@ function showOfflinePopup(amount,seconds){
 function init(){load();const sn=localStorage.getItem('nova_player_name');if(sn){playerName=sn;startGame();}else{els.nameScreen.style.display='flex';els.game.style.display='none';setTimeout(()=>els.nameInput.focus(),300);}}
 
 function startLoops(){
+    // Бот — каждую секунду
     setInterval(()=>{if(state.hasAutoClicker&&state.botActive){let g=state.clickPower*(state.boostActive?50:1);addScore(g);const r=els.mainCoin.getBoundingClientRect();showFloat(r.left+r.width/2+(Math.random()*40-20),r.top+r.height/2+(Math.random()*40-20),`+${Math.floor(g)}`);els.mainCoin.classList.add('coin-pressed');setTimeout(()=>els.mainCoin.classList.remove('coin-pressed'),100);}},1000);
+    // Энергия — каждую секунду
     setInterval(()=>{if(state.energy<state.maxEnergy){state.energy=Math.min(state.maxEnergy,state.energy+state.regen);updateEnergy();}},1000);
-    setInterval(()=>{save();updateSW();},5000);
+    // === СОХРАНЕНИЕ В ОБЛАКО КАЖДУЮ 1 СЕКУНДУ ===
+    setInterval(()=>{
+        state.lastSave=Date.now();
+        localStorage.setItem('nova_v15_nolimit',JSON.stringify(state));
+        if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));
+        updateSW();
+    },1000);
     scheduleRocket();
 }
 
@@ -267,18 +274,15 @@ function renderUpgrades(){els.upgrades.innerHTML='';UPGRADES.forEach(u=>{const l
 function renderTasks(){els.tasks.innerHTML='';TASKS.forEach(t=>{const done=state.tasksDone.includes(t.id);const d=document.createElement('div');d.className=`list-card ${done?'disabled':''}`;d.onclick=()=>doTask(t);d.innerHTML=`<div class="card-icon" style="font-size:1.5rem">🎁</div><div class="card-info"><div class="card-title">${t.name}</div><div class="card-desc">+${t.reward.toLocaleString()}</div></div><div class="card-action"><div class="card-cost" style="color:${done?'#888':'var(--accent)'}">${done?'✅':'Забрать'}</div></div>`;els.tasks.appendChild(d);});}
 function renderSkins(){els.themes.innerHTML='';THEMES.forEach(t=>{const d=document.createElement('div');d.className=`skin-item ${state.theme===t.id?'selected':''}`;d.onclick=()=>setTheme(t.id);d.innerHTML=`<div class="skin-preview" style="background:${t.color};border-radius:50%;width:40px;height:40px"></div><div class="skin-name">${t.name}</div>`;els.themes.appendChild(d);});els.icons.innerHTML='';ICONS.forEach(i=>{const d=document.createElement('div');d.className=`skin-item ${state.icon===i.id?'selected':''}`;d.onclick=()=>setIcon(i.id);d.innerHTML=`<div class="skin-preview">${SVG_ICONS[i.id]}</div><div class="skin-name">${i.name}</div>`;els.icons.appendChild(d);});}
 
-/* === LEADERBOARD — обновляется каждую секунду, сортировка по очкам === */
+/* === LEADERBOARD — сортировка по очкам, обновление каждую секунду === */
 function renderLeadersFromCache(){
     els.leaders.innerHTML='';
     const td=document.createElement('div');td.className='lb-total';td.innerHTML=`Всего игроков: <span>${totalPlayersCache}</span>`;els.leaders.appendChild(td);
     if(!leadersCache.length){els.leaders.innerHTML+='<div class="lb-loading">Пока нет игроков. Будьте первым!</div>';return;}
-
-    // Сортируем по очкам — кто больше, тот выше
+    // Сортируем — кто больше, тот выше
     const sorted=[...leadersCache].sort((a,b)=>b.score-a.score);
-
     let myRank=-1;
     sorted.forEach((l,i)=>{if(l.username===playerName)myRank=i;});
-
     sorted.forEach((l,i)=>{
         const isMe=l.username===playerName;
         const d=document.createElement('div');d.className='lb-item'+(isMe?' lb-me':'');
@@ -287,8 +291,6 @@ function renderLeadersFromCache(){
         d.innerHTML=`<div class="lb-rank">${rk}</div><div class="lb-name" style="${isMe?'color:var(--accent)':''}">${dn} ${isMe?'(Вы)':''}</div><div class="lb-score">${Math.floor(l.score).toLocaleString()}</div>`;
         els.leaders.appendChild(d);
     });
-
-    // Если игрок не в топ-20, показываем его позицию отдельно
     if(myRank===-1&&playerName){
         els.leaders.innerHTML+='<div style="text-align:center;padding:8px;color:var(--text-sec);font-size:.8rem">...</div>';
         const myScore=Math.floor(state.score);
@@ -330,6 +332,7 @@ function updateScore(){els.score.textContent=Math.floor(state.score).toLocaleStr
 function updateEnergy(){els.energyCur.textContent=Math.floor(state.energy);els.energyMax.textContent=state.maxEnergy;els.energyFill.style.width=(state.energy/state.maxEnergy*100)+'%';}
 function showFloat(x,y,txt){const el=document.createElement('div');el.className='float-text';el.textContent=txt;el.style.left=(x-20)+'px';el.style.top=(y-20)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),700);}
 
+// Сохранение в localStorage + облако — вызывается из основного цикла (каждую 1 сек)
 function save(){state.lastSave=Date.now();localStorage.setItem('nova_v15_nolimit',JSON.stringify(state));if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));updateSW();}
 function load(){let raw=localStorage.getItem('nova_v15_nolimit')||localStorage.getItem('nova_v14_sw')||localStorage.getItem('nova_v13_cache');if(!raw)return;try{const p=JSON.parse(raw);state={...state,...p};if(state.hasAutoClicker&&state.botActive===undefined)state.botActive=true;if(state.boostActive&&Date.now()>state.boostEndTime)state.boostActive=false;state.energy=Math.min(state.energy,state.maxEnergy);}catch(e){}}
 
