@@ -162,11 +162,11 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 
 <script>
 /* ============================================================
-   SERVICE WORKER — бот работает в фоне + ловит ракетку
+   SERVICE WORKER — бот 40 кликов/сек + ловит ракетку
    ============================================================ */
 const SW_CODE=`
 let lastTick=Date.now(),clickPower=1,botActive=false,boostActive=false;
-let boostEnd=0, lastRocketTime=0;
+let boostEnd=0,lastRocketTime=0;
 self.addEventListener('install',()=>self.skipWaiting());
 self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
 self.addEventListener('message',e=>{
@@ -181,28 +181,21 @@ self.addEventListener('message',e=>{
     if(e.data.type==='GET_EARNINGS'){
         const now=Date.now();
         let diffSec=(now-lastTick)/1000;
-        // Считаем сколько ракеток бот поймал за время отсутствия
         let rocketsCaught=0;
         if(botActive&&lastRocketTime>0){
-            // Ракетка каждые 60 сек, доступна 5 сек
-            // Бот ловит каждую ракетку которая появилась за время отсутствия
             const elapsed=now-lastRocketTime;
-            const rocketCycle=60000; // 60 сек между ракетками
-            rocketsCaught=Math.floor(elapsed/rocketCycle);
+            rocketsCaught=Math.floor(elapsed/60000);
         }
-        // Доход: базовый + буст от пойманных ракеток
-        // Каждая ракетка = 5 сек x50
         let totalEarned=0;
         if(botActive){
-            // Обычный доход без буста
+            // 40 кликов в секунду (каждые 25мс)
+            const clicksPerSec=40;
             let normalSec=diffSec-(rocketsCaught*5);
             if(normalSec<0)normalSec=0;
-            totalEarned+=Math.floor(normalSec*clickPower);
-            // Доход с бустом от ракеток
-            totalEarned+=Math.floor(rocketsCaught*5*clickPower*50);
+            totalEarned+=Math.floor(normalSec*clickPower*clicksPerSec);
+            totalEarned+=Math.floor(rocketsCaught*5*clickPower*clicksPerSec*50);
         }
-        lastTick=now;
-        lastRocketTime=now;
+        lastTick=now;lastRocketTime=now;
         e.source.postMessage({type:'EARNINGS',amount:totalEarned,seconds:Math.floor(diffSec),rockets:rocketsCaught});
     }
 });
@@ -210,15 +203,7 @@ setInterval(()=>{if(botActive)lastTick=Date.now();},10000);
 `;
 let swReg=null;
 async function registerSW(){try{const b=new Blob([SW_CODE],{type:'application/javascript'});swReg=await navigator.serviceWorker.register(URL.createObjectURL(b));}catch(e){}}
-function updateSW(){
-    if(swReg&&swReg.active)swReg.active.postMessage({
-        type:'UPDATE',clickPower:state.clickPower,
-        botActive:state.hasAutoClicker&&state.botActive,
-        boostActive:state.boostActive,
-        boostEnd:state.boostEndTime,
-        lastRocketTime:state.lastRocketTime||Date.now()
-    });
-}
+function updateSW(){if(swReg&&swReg.active)swReg.active.postMessage({type:'UPDATE',clickPower:state.clickPower,botActive:state.hasAutoClicker&&state.botActive,boostActive:state.boostActive,boostEnd:state.boostEndTime,lastRocketTime:state.lastRocketTime||Date.now()});}
 async function getOfflineEarnings(){return new Promise(r=>{if(swReg&&swReg.active){const h=e=>{if(e.data.type==='EARNINGS'){navigator.serviceWorker.removeEventListener('message',h);r(e.data);}};navigator.serviceWorker.addEventListener('message',h);swReg.active.postMessage({type:'GET_EARNINGS'});setTimeout(()=>{navigator.serviceWorker.removeEventListener('message',h);r(null);},3000);}else r(null);});}
 
 /* ============================================================
@@ -227,23 +212,9 @@ async function getOfflineEarnings(){return new Promise(r=>{if(swReg&&swReg.activ
 const supabaseClient=window.supabase.createClient('https://ombdrdqtojyevdqylhfs.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tYmRyZHF0b2p5ZXZkcXlsaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NTkxMTUsImV4cCI6MjEwNTEzNTExNX0.XaW5iFVShW1mizWp9l3RZX7wY8jpwNJG7_OdY0_Jauk');
 async function saveScoreToCloud(n,s){try{await supabaseClient.from('leaders').upsert({username:n,score:s},{onConflict:'username'});}catch(e){}}
 
-/* === CACHE === */
 let leadersCache=[],totalPlayersCache=0,cacheLoaded=false;
-async function preloadLeaders(){
-    try{
-        const[lr,cr]=await Promise.all([supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),supabaseClient.from('leaders').select('*',{count:'exact',head:true})]);
-        if(lr.data)leadersCache=lr.data;if(cr.count!==null)totalPlayersCache=cr.count;cacheLoaded=true;
-    }catch(e){}
-}
-// Обновление лидерборда каждую 1 секунду
-setInterval(async()=>{
-    try{
-        const[lr,cr]=await Promise.all([supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),supabaseClient.from('leaders').select('*',{count:'exact',head:true})]);
-        if(lr.data)leadersCache=lr.data;if(cr.count!==null)totalPlayersCache=cr.count;cacheLoaded=true;
-        const lb=document.getElementById('screen-leaderboard');
-        if(lb&&lb.classList.contains('active'))renderLeadersFromCache();
-    }catch(e){}
-},1000);
+async function preloadLeaders(){try{const[lr,cr]=await Promise.all([supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),supabaseClient.from('leaders').select('*',{count:'exact',head:true})]);if(lr.data)leadersCache=lr.data;if(cr.count!==null)totalPlayersCache=cr.count;cacheLoaded=true;}catch(e){}}
+setInterval(async()=>{try{const[lr,cr]=await Promise.all([supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),supabaseClient.from('leaders').select('*',{count:'exact',head:true})]);if(lr.data)leadersCache=lr.data;if(cr.count!==null)totalPlayersCache=cr.count;cacheLoaded=true;const lb=document.getElementById('screen-leaderboard');if(lb&&lb.classList.contains('active'))renderLeadersFromCache();}catch(e){}},1000);
 
 /* ============================================================
    DATA
@@ -251,8 +222,11 @@ setInterval(async()=>{
 const SVG_ICONS={n:'<svg viewBox="0 0 100 100"><path d="M30 20 V80 H45 V45 L70 80 H85 V20 H70 V55 L45 20 H30 Z" fill="#fff" stroke="rgba(0,0,0,.2)" stroke-width="2"/></svg>',pizza:'<svg viewBox="0 0 100 100"><path d="M50 10 L90 80 H10 Z" fill="#ffcc00" stroke="#ff9900" stroke-width="3"/><circle cx="50" cy="40" r="5" fill="#f00"/><circle cx="40" cy="60" r="5" fill="#f00"/><circle cx="60" cy="60" r="5" fill="#f00"/></svg>',cat:'<svg viewBox="0 0 100 100"><path d="M20 30 L30 10 L40 30 H60 L70 10 L80 30 V70 Q50 90 20 70 Z" fill="#aaa" stroke="#fff" stroke-width="2"/><circle cx="35" cy="45" r="5" fill="#000"/><circle cx="65" cy="45" r="5" fill="#000"/><path d="M45 55 Q50 60 55 55" stroke="#000" stroke-width="2" fill="none"/></svg>',diamond:'<svg viewBox="0 0 100 100"><path d="M50 10 L80 40 L50 90 L20 40 Z" fill="#0ff" stroke="#fff" stroke-width="2"/><path d="M20 40 H80" stroke="#fff" stroke-width="2"/><path d="M50 10 L35 40 L50 90 L65 40 Z" fill="rgba(255,255,255,.3)"/></svg>'};
 const THEMES=[{id:'default',name:'Фиолет',class:'',color:'#7000ff'},{id:'green',name:'Матрица',class:'theme-green',color:'#00ff41'},{id:'pink',name:'Кибер',class:'theme-pink',color:'#ff00ff'}];
 const ICONS=[{id:'n',name:'Буква N'},{id:'pizza',name:'Пицца'},{id:'cat',name:'Кот'},{id:'diamond',name:'Алмаз'}];
-const UPGRADES=[{id:'click',icon:'👆',name:'Сила клика',desc:'+1 NOVA за клик',baseCost:100,costMul:1.5,profit:1,type:'click'},{id:'tank',icon:'🔋',name:'Бак энергии',desc:'+1000 макс.',baseCost:200,costMul:1.6,profit:1000,type:'max'},{id:'regen',icon:'⚡',name:'Регенерация',desc:'+1 энергия/сек',baseCost:150,costMul:1.5,profit:1,type:'regen'},{id:'autoclicker',icon:'🤖',name:'Автокликер (Бот)',desc:'1 раз/сек. Ловит ракетку!',baseCost:10000,costMul:1,profit:1,type:'auto',oneTime:true}];
+const UPGRADES=[{id:'click',icon:'👆',name:'Сила клика',desc:'+1 NOVA за клик',baseCost:100,costMul:1.5,profit:1,type:'click'},{id:'tank',icon:'🔋',name:'Бак энергии',desc:'+1000 макс.',baseCost:200,costMul:1.6,profit:1000,type:'max'},{id:'regen',icon:'⚡',name:'Регенерация',desc:'+1 энергия/сек',baseCost:150,costMul:1.5,profit:1,type:'regen'},{id:'autoclicker',icon:'🤖',name:'Автокликер (Бот)',desc:'40 кликов/сек! Ловит ракетку!',baseCost:10000,costMul:1,profit:1,type:'auto',oneTime:true}];
 const TASKS=[{id:'sub',name:'Подписка на канал',reward:5000},{id:'inv',name:'Пригласить друга',reward:10000}];
+
+// BOT_SPEED: 25ms = 40 кликов в секунду
+const BOT_INTERVAL=25;
 
 let playerName='';
 let state={score:0,clickPower:1,energy:9000,maxEnergy:9000,regen:3,hasAutoClicker:false,botActive:true,levels:{},tasksDone:[],theme:'default',icon:'n',lastSave:Date.now(),boostActive:false,boostEndTime:0,lastEnergyBoost:0,lastRocketTime:Date.now()};
@@ -263,129 +237,88 @@ const els={nameScreen:$('name-screen'),nameInput:$('name-input'),nameError:$('na
 function submitName(){const n=els.nameInput.value.trim();if(n.length<2||n.length>15){els.nameError.style.display='block';return;}playerName=n;localStorage.setItem('nova_player_name',playerName);startGame();}
 document.addEventListener('DOMContentLoaded',()=>{els.nameInput.addEventListener('keydown',e=>{if(e.key==='Enter')submitName();});registerSW();});
 
-async function startGame(){
-    els.nameScreen.style.display='none';els.game.style.display='flex';
-    applyTheme(state.theme);applyIcon(state.icon);
-    await checkOfflineEarnings();
-    updateUI();startLoops();preloadLeaders();updateSW();
-}
+async function startGame(){els.nameScreen.style.display='none';els.game.style.display='flex';applyTheme(state.theme);applyIcon(state.icon);await checkOfflineEarnings();updateUI();startLoops();preloadLeaders();updateSW();}
 
 async function checkOfflineEarnings(){
     const sw=await getOfflineEarnings();
-    if(sw&&sw.amount>0){
-        state.score+=sw.amount;
-        state.lastRocketTime=Date.now();
-        showOfflinePopup(sw.amount,sw.seconds,sw.rockets||0);
-        return;
-    }
-    // Fallback через localStorage
+    if(sw&&sw.amount>0){state.score+=sw.amount;state.lastRocketTime=Date.now();showOfflinePopup(sw.amount,sw.seconds,sw.rockets||0);return;}
     if(state.hasAutoClicker&&state.botActive){
-        const now=Date.now();
-        const diffSec=(now-state.lastSave)/1000;
+        const now=Date.now();const diffSec=(now-state.lastSave)/1000;
         if(diffSec>5){
-            // Считаем сколько ракеток пропустили
             const lastRT=state.lastRocketTime||state.lastSave;
-            const elapsed=now-lastRT;
-            const rocketsCaught=Math.floor(elapsed/60000);
-            // Обычный доход
-            let normalSec=diffSec-(rocketsCaught*5);
-            if(normalSec<0)normalSec=0;
-            let earned=Math.floor(normalSec*state.clickPower);
-            // Доход от ракеток (5 сек x50 каждая)
-            earned+=Math.floor(rocketsCaught*5*state.clickPower*50);
-            if(earned>0){
-                state.score+=earned;
-                state.lastRocketTime=now;
-                showOfflinePopup(earned,Math.floor(diffSec),rocketsCaught);
-            }
+            const rocketsCaught=Math.floor((now-lastRT)/60000);
+            const clicksPerSec=1000/BOT_INTERVAL; // 40
+            let normalSec=diffSec-(rocketsCaught*5);if(normalSec<0)normalSec=0;
+            let earned=Math.floor(normalSec*state.clickPower*clicksPerSec);
+            earned+=Math.floor(rocketsCaught*5*state.clickPower*clicksPerSec*50);
+            if(earned>0){state.score+=earned;state.lastRocketTime=now;showOfflinePopup(earned,Math.floor(diffSec),rocketsCaught);}
         }
     }
 }
 
 function showOfflinePopup(amount,seconds,rockets){
     let t;if(seconds>=86400){const d=Math.floor(seconds/86400),h=Math.floor((seconds%86400)/3600);t=d+' дн. '+h+' ч.';}else if(seconds>=3600){t=Math.floor(seconds/3600)+' ч. '+Math.floor((seconds%3600)/60)+' мин.';}else if(seconds>=60){t=Math.floor(seconds/60)+' мин. '+seconds%60+' сек.';}else{t=seconds+' сек.';}
-    const rocketText=rockets>0?`<p style="color:#ff416c;margin-top:8px">🚀 Бот поймал ${rockets} ракеток!</p>`:'';
+    const rt=rockets>0?`<p style="color:#ff416c;margin-top:8px">🚀 Бот поймал ${rockets} ракеток!</p>`:'';
     const p=document.createElement('div');p.className='offline-popup';
-    p.innerHTML=`<div class="offline-box"><h2>🤖 Бот работал!</h2><p style="color:var(--text-sec)">Вы отсутствовали ${t}</p>${rocketText}<div class="amount">+${amount.toLocaleString()} NOVA</div><button onclick="this.closest('.offline-popup').remove()">Забрать</button></div>`;
+    p.innerHTML=`<div class="offline-box"><h2>🤖 Бот работал!</h2><p style="color:var(--text-sec)">Вы отсутствовали ${t}</p>${rt}<div class="amount">+${amount.toLocaleString()} NOVA</div><button onclick="this.closest('.offline-popup').remove()">Забрать</button></div>`;
     document.body.appendChild(p);
 }
 
 function init(){load();const sn=localStorage.getItem('nova_player_name');if(sn){playerName=sn;startGame();}else{els.nameScreen.style.display='flex';els.game.style.display='none';setTimeout(()=>els.nameInput.focus(),300);}}
 
+/* ============================================================
+   LOOPS — бот каждые 25мс
+   ============================================================ */
+let botFloatCounter=0;
 function startLoops(){
-    // Бот — каждую секунду
+    // === БОТ: каждые 25мс (40 кликов/сек) ===
     setInterval(()=>{
         if(state.hasAutoClicker&&state.botActive){
             let g=state.clickPower*(state.boostActive?50:1);
             addScore(g);
-            const r=els.mainCoin.getBoundingClientRect();
-            showFloat(r.left+r.width/2+(Math.random()*40-20),r.top+r.height/2+(Math.random()*40-20),`+${Math.floor(g)}`);
-            els.mainCoin.classList.add('coin-pressed');
-            setTimeout(()=>els.mainCoin.classList.remove('coin-pressed'),100);
+            // Показываем всплывающий текст не каждый тик, а каждые 10 тиков (250мс)
+            botFloatCounter++;
+            if(botFloatCounter>=10){
+                botFloatCounter=0;
+                const r=els.mainCoin.getBoundingClientRect();
+                showFloat(r.left+r.width/2+(Math.random()*60-30),r.top+r.height/2+(Math.random()*60-30),`+${Math.floor(g*10)}`);
+            }
+            // Анимация монеты каждые 5 тиков (125мс)
+            if(botFloatCounter%5===0){
+                els.mainCoin.classList.add('coin-pressed');
+                setTimeout(()=>els.mainCoin.classList.remove('coin-pressed'),50);
+            }
         }
-    },1000);
+    },BOT_INTERVAL);
+
     // Энергия
     setInterval(()=>{if(state.energy<state.maxEnergy){state.energy=Math.min(state.maxEnergy,state.energy+state.regen);updateEnergy();}},1000);
+
     // Сохранение + облако — каждую 1 секунду
-    setInterval(()=>{
-        state.lastSave=Date.now();
-        localStorage.setItem('nova_v19_rocket',JSON.stringify(state));
-        if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));
-        updateSW();
-    },1000);
+    setInterval(()=>{state.lastSave=Date.now();localStorage.setItem('nova_v20_bot25ms',JSON.stringify(state));if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));updateSW();},1000);
+
     scheduleRocket();
 }
 
 /* ============================================================
-   ROCKET — бот ловит автоматически если есть автокликер
+   ROCKET — бот ловит автоматически
    ============================================================ */
 let rTimer,rHide;
 function scheduleRocket(){clearTimeout(rTimer);rTimer=setTimeout(spawnRocket,60000);}
-
 function spawnRocket(){
-    // Если бот активен — он ловит ракетку автоматически
-    if(state.hasAutoClicker&&state.botActive){
-        autoCatchRocket();
-        return;
-    }
-    // Иначе показываем ракетку игроку
-    els.rocket.classList.remove('hidden-el');
-    setTimeout(()=>els.rocket.classList.add('visible'),50);
+    if(state.hasAutoClicker&&state.botActive){autoCatchRocket();return;}
+    els.rocket.classList.remove('hidden-el');setTimeout(()=>els.rocket.classList.add('visible'),50);
     rHide=setTimeout(()=>{hideRocket();scheduleRocket();},5000);
 }
-
 function autoCatchRocket(){
-    // Бот поймал ракетку!
-    state.boostActive=true;
-    state.boostEndTime=Date.now()+5000;
-    state.lastRocketTime=Date.now();
-    els.banner.textContent='🤖 БОТ ПОЙМАЛ x50! ⚡';
-    els.banner.style.display='block';
-    updateSW();
-    // Визуальный эффект
+    state.boostActive=true;state.boostEndTime=Date.now()+5000;state.lastRocketTime=Date.now();
+    els.banner.textContent='🤖 БОТ ПОЙМАЛ x50! ⚡';els.banner.style.display='block';updateSW();
     const r=els.mainCoin.getBoundingClientRect();
-    for(let i=0;i<5;i++){
-        setTimeout(()=>{
-            showFloat(r.left+r.width/2+(Math.random()*60-30),r.top+r.height/2+(Math.random()*60-30),'🚀x50');
-        },i*200);
-    }
+    for(let i=0;i<5;i++){setTimeout(()=>{showFloat(r.left+r.width/2+(Math.random()*60-30),r.top+r.height/2+(Math.random()*60-30),'🚀x50');},i*200);}
     if(navigator.vibrate)navigator.vibrate([100,50,100,50,100]);
-    setTimeout(()=>{
-        state.boostActive=false;
-        els.banner.style.display='none';
-        scheduleRocket();
-        updateSW();
-    },5000);
-}
-
-function activateBoost(){
-    clearTimeout(rHide);hideRocket();
-    state.boostActive=true;state.boostEndTime=Date.now()+5000;
-    state.lastRocketTime=Date.now();
-    els.banner.textContent='⚡ BOOST x50 (5с) ⚡';els.banner.style.display='block';
-    updateSW();if(navigator.vibrate)navigator.vibrate([80,40,80]);
     setTimeout(()=>{state.boostActive=false;els.banner.style.display='none';scheduleRocket();updateSW();},5000);
 }
+function activateBoost(){clearTimeout(rHide);hideRocket();state.boostActive=true;state.boostEndTime=Date.now()+5000;state.lastRocketTime=Date.now();els.banner.textContent='⚡ BOOST x50 (5с) ⚡';els.banner.style.display='block';updateSW();if(navigator.vibrate)navigator.vibrate([80,40,80]);setTimeout(()=>{state.boostActive=false;els.banner.style.display='none';scheduleRocket();updateSW();},5000);}
 function hideRocket(){els.rocket.classList.remove('visible');setTimeout(()=>els.rocket.classList.add('hidden-el'),500);}
 
 /* ============================================================
@@ -401,36 +334,18 @@ function renderUpgrades(){els.upgrades.innerHTML='';UPGRADES.forEach(u=>{const l
 function renderTasks(){els.tasks.innerHTML='';TASKS.forEach(t=>{const done=state.tasksDone.includes(t.id);const d=document.createElement('div');d.className=`list-card ${done?'disabled':''}`;d.onclick=()=>doTask(t);d.innerHTML=`<div class="card-icon" style="font-size:1.5rem">🎁</div><div class="card-info"><div class="card-title">${t.name}</div><div class="card-desc">+${t.reward.toLocaleString()}</div></div><div class="card-action"><div class="card-cost" style="color:${done?'#888':'var(--accent)'}">${done?'✅':'Забрать'}</div></div>`;els.tasks.appendChild(d);});}
 function renderSkins(){els.themes.innerHTML='';THEMES.forEach(t=>{const d=document.createElement('div');d.className=`skin-item ${state.theme===t.id?'selected':''}`;d.onclick=()=>setTheme(t.id);d.innerHTML=`<div class="skin-preview" style="background:${t.color};border-radius:50%;width:40px;height:40px"></div><div class="skin-name">${t.name}</div>`;els.themes.appendChild(d);});els.icons.innerHTML='';ICONS.forEach(i=>{const d=document.createElement('div');d.className=`skin-item ${state.icon===i.id?'selected':''}`;d.onclick=()=>setIcon(i.id);d.innerHTML=`<div class="skin-preview">${SVG_ICONS[i.id]}</div><div class="skin-name">${i.name}</div>`;els.icons.appendChild(d);});}
 
-/* === LEADERBOARD === */
 function renderLeadersFromCache(){
-    els.leaders.innerHTML='';
-    const td=document.createElement('div');td.className='lb-total';td.innerHTML=`Всего игроков: <span>${totalPlayersCache}</span>`;els.leaders.appendChild(td);
+    els.leaders.innerHTML='';const td=document.createElement('div');td.className='lb-total';td.innerHTML=`Всего игроков: <span>${totalPlayersCache}</span>`;els.leaders.appendChild(td);
     if(!leadersCache.length){els.leaders.innerHTML+='<div class="lb-loading">Пока нет игроков. Будьте первым!</div>';return;}
-    const sorted=[...leadersCache].sort((a,b)=>b.score-a.score);
-    let myRank=-1;sorted.forEach((l,i)=>{if(l.username===playerName)myRank=i;});
-    sorted.forEach((l,i)=>{
-        const isMe=l.username===playerName;const d=document.createElement('div');d.className='lb-item'+(isMe?' lb-me':'');
-        let rk=i+1;if(i===0)rk='🥇';else if(i===1)rk='🥈';else if(i===2)rk='🥉';
-        const dn=l.username.length>14?l.username.substring(0,12)+'..':l.username;
-        d.innerHTML=`<div class="lb-rank">${rk}</div><div class="lb-name" style="${isMe?'color:var(--accent)':''}">${dn} ${isMe?'(Вы)':''}</div><div class="lb-score">${Math.floor(l.score).toLocaleString()}</div>`;
-        els.leaders.appendChild(d);
-    });
-    if(myRank===-1&&playerName){
-        els.leaders.innerHTML+='<div style="text-align:center;padding:8px;color:var(--text-sec);font-size:.8rem">...</div>';
-        const myScore=Math.floor(state.score);const myPos=sorted.filter(l=>l.score>myScore).length+1;
-        const d=document.createElement('div');d.className='lb-item lb-me';
-        d.innerHTML=`<div class="lb-rank">${myPos}</div><div class="lb-name" style="color:var(--accent)">${playerName} (Вы)</div><div class="lb-score">${myScore.toLocaleString()}</div>`;
-        els.leaders.appendChild(d);
-    }
+    const sorted=[...leadersCache].sort((a,b)=>b.score-a.score);let myRank=-1;sorted.forEach((l,i)=>{if(l.username===playerName)myRank=i;});
+    sorted.forEach((l,i)=>{const isMe=l.username===playerName;const d=document.createElement('div');d.className='lb-item'+(isMe?' lb-me':'');let rk=i+1;if(i===0)rk='🥇';else if(i===1)rk='🥈';else if(i===2)rk='🥉';const dn=l.username.length>14?l.username.substring(0,12)+'..':l.username;d.innerHTML=`<div class="lb-rank">${rk}</div><div class="lb-name" style="${isMe?'color:var(--accent)':''}">${dn} ${isMe?'(Вы)':''}</div><div class="lb-score">${Math.floor(l.score).toLocaleString()}</div>`;els.leaders.appendChild(d);});
+    if(myRank===-1&&playerName){els.leaders.innerHTML+='<div style="text-align:center;padding:8px;color:var(--text-sec);font-size:.8rem">...</div>';const myScore=Math.floor(state.score);const myPos=sorted.filter(l=>l.score>myScore).length+1;const d=document.createElement('div');d.className='lb-item lb-me';d.innerHTML=`<div class="lb-rank">${myPos}</div><div class="lb-name" style="color:var(--accent)">${playerName} (Вы)</div><div class="lb-score">${myScore.toLocaleString()}</div>`;els.leaders.appendChild(d);}
 }
-async function renderLeaders(){
-    if(cacheLoaded)renderLeadersFromCache();else els.leaders.innerHTML='<div class="lb-loading">⏳ Загрузка...</div>';
-    try{const[lr,cr]=await Promise.all([supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),supabaseClient.from('leaders').select('*',{count:'exact',head:true})]);if(lr.data)leadersCache=lr.data;if(cr.count!==null)totalPlayersCache=cr.count;cacheLoaded=true;renderLeadersFromCache();}catch(e){if(!cacheLoaded)els.leaders.innerHTML='<div class="lb-loading">❌ Ошибка</div>';}
-}
+async function renderLeaders(){if(cacheLoaded)renderLeadersFromCache();else els.leaders.innerHTML='<div class="lb-loading">⏳ Загрузка...</div>';try{const[lr,cr]=await Promise.all([supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),supabaseClient.from('leaders').select('*',{count:'exact',head:true})]);if(lr.data)leadersCache=lr.data;if(cr.count!==null)totalPlayersCache=cr.count;cacheLoaded=true;renderLeadersFromCache();}catch(e){if(!cacheLoaded)els.leaders.innerHTML='<div class="lb-loading">❌ Ошибка</div>';}}
 
 function buyUpgrade(u){const lvl=state.levels[u.id]||0,cost=Math.floor(u.baseCost*Math.pow(u.costMul,lvl));if(state.score<cost)return;state.score-=cost;if(u.oneTime){state.hasAutoClicker=true;state.botActive=true;updateBotIndicator();}else{state.levels[u.id]=lvl+1;if(u.type==='click')state.clickPower+=u.profit;if(u.type==='max')state.maxEnergy+=u.profit;if(u.type==='regen')state.regen+=u.profit;}updateUI();renderUpgrades();save();updateSW();if(navigator.vibrate)navigator.vibrate(30);}
 function toggleBot(e){e.stopPropagation();state.botActive=!state.botActive;updateBotIndicator();renderUpgrades();save();updateSW();if(navigator.vibrate)navigator.vibrate(10);}
-function updateBotIndicator(){if(state.hasAutoClicker&&state.botActive){els.botIndicator.style.display='block';els.botBg.style.display='block';els.botIndicator.textContent='🤖 БОТ РАБОТАЕТ';els.botIndicator.style.filter='drop-shadow(0 0 5px rgba(255,0,255,.3))';els.botBg.style.borderColor='rgba(255,0,255,.3)';}else if(state.hasAutoClicker&&!state.botActive){els.botIndicator.style.display='block';els.botBg.style.display='block';els.botIndicator.textContent='🤖 БОТ ПАУЗА';els.botIndicator.style.filter='grayscale(1)';els.botBg.style.borderColor='rgba(255,255,255,.2)';}else{els.botIndicator.style.display='none';els.botBg.style.display='none';}}
+function updateBotIndicator(){if(state.hasAutoClicker&&state.botActive){els.botIndicator.style.display='block';els.botBg.style.display='block';els.botIndicator.textContent='🤖 БОТ 40/сек';els.botIndicator.style.filter='drop-shadow(0 0 5px rgba(255,0,255,.3))';els.botBg.style.borderColor='rgba(255,0,255,.3)';}else if(state.hasAutoClicker&&!state.botActive){els.botIndicator.style.display='block';els.botBg.style.display='block';els.botIndicator.textContent='🤖 БОТ ПАУЗА';els.botIndicator.style.filter='grayscale(1)';els.botBg.style.borderColor='rgba(255,255,255,.2)';}else{els.botIndicator.style.display='none';els.botBg.style.display='none';}}
 function doTask(t){if(state.tasksDone.includes(t.id))return;state.tasksDone.push(t.id);state.score+=t.reward;updateUI();renderTasks();save();}
 function setTheme(id){state.theme=id;applyTheme(id);renderSkins();save();}
 function applyTheme(id){document.body.className='';const t=THEMES.find(x=>x.id===id);if(t&&t.class)document.body.classList.add(t.class);}
@@ -444,8 +359,8 @@ function updateScore(){els.score.textContent=Math.floor(state.score).toLocaleStr
 function updateEnergy(){els.energyCur.textContent=Math.floor(state.energy);els.energyMax.textContent=state.maxEnergy;els.energyFill.style.width=(state.energy/state.maxEnergy*100)+'%';}
 function showFloat(x,y,txt){const el=document.createElement('div');el.className='float-text';el.textContent=txt;el.style.left=(x-20)+'px';el.style.top=(y-20)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),700);}
 
-function save(){state.lastSave=Date.now();localStorage.setItem('nova_v19_rocket',JSON.stringify(state));if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));updateSW();}
-function load(){let raw=localStorage.getItem('nova_v19_rocket')||localStorage.getItem('nova_v15_nolimit')||localStorage.getItem('nova_v14_sw');if(!raw)return;try{const p=JSON.parse(raw);state={...state,...p};if(state.hasAutoClicker&&state.botActive===undefined)state.botActive=true;if(state.boostActive&&Date.now()>state.boostEndTime)state.boostActive=false;state.energy=Math.min(state.energy,state.maxEnergy);if(!state.lastRocketTime)state.lastRocketTime=Date.now();}catch(e){}}
+function save(){state.lastSave=Date.now();localStorage.setItem('nova_v20_bot25ms',JSON.stringify(state));if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));updateSW();}
+function load(){let raw=localStorage.getItem('nova_v20_bot25ms')||localStorage.getItem('nova_v19_rocket')||localStorage.getItem('nova_v15_nolimit');if(!raw)return;try{const p=JSON.parse(raw);state={...state,...p};if(state.hasAutoClicker&&state.botActive===undefined)state.botActive=true;if(state.boostActive&&Date.now()>state.boostEndTime)state.boostActive=false;state.energy=Math.min(state.energy,state.maxEnergy);if(!state.lastRocketTime)state.lastRocketTime=Date.now();}catch(e){}}
 
 document.addEventListener('visibilitychange',()=>{if(document.hidden){save();updateSW();}});
 window.addEventListener('beforeunload',()=>{save();updateSW();});
