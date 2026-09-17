@@ -78,14 +78,17 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 .skin-preview{height:50px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
 .skin-preview svg{width:40px;height:40px}
 .skin-name{font-size:.8rem;font-weight:700}
-.lb-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card-bg);border-radius:12px;border:1px solid var(--card-border)}
+.lb-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card-bg);border-radius:12px;border:1px solid var(--card-border);transition:all .3s}
 .lb-rank{font-size:1.2rem;font-weight:900;color:var(--accent);width:30px;text-align:center}
 .lb-name{flex:1;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lb-score{font-weight:900}
+.lb-score{font-weight:900;transition:all .3s}
 .lb-me{border-color:var(--accent);background:rgba(112,0,255,.15)}
 .lb-loading{text-align:center;padding:40px 20px;color:var(--text-sec)}
 .lb-total{text-align:center;padding:10px;margin-bottom:10px;background:var(--card-bg);border-radius:12px;font-size:.85rem;color:var(--text-sec);border:1px solid var(--card-border)}
 .lb-total span{color:var(--accent);font-weight:900}
+.lb-live{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;color:#00ff41;margin-left:8px}
+.lb-live-dot{width:8px;height:8px;border-radius:50%;background:#00ff41;animation:livePulse 1.5s infinite}
+@keyframes livePulse{0%,100%{opacity:1;box-shadow:0 0 4px #00ff41}50%{opacity:.4;box-shadow:0 0 8px #00ff41}}
 #rocket-btn{position:fixed;top:50%;right:-80px;z-index:50;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#ff416c,#ff4b2b);display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(255,65,108,.5);cursor:pointer;transition:right .5s cubic-bezier(.175,.885,.32,1.275)}
 #rocket-btn svg{width:32px;height:32px;fill:#fff}
 #rocket-btn.visible{right:16px}
@@ -148,8 +151,9 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 </div>
 </div>
 
+<!-- SCREENS -->
 <div id="screen-leaderboard" class="screen">
-<div class="screen-header"><button class="screen-back" onclick="closeScreen()">←</button><span class="screen-title">Топ игроков</span></div>
+<div class="screen-header"><button class="screen-back" onclick="closeScreen()">←</button><span class="screen-title">Топ игроков <span class="lb-live"><span class="lb-live-dot"></span>LIVE</span></span></div>
 <div class="screen-content" id="leaderboard-list"></div>
 <div class="bottom-nav">
 <button class="nav-btn" onclick="openScreen('skins')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/></svg>Скин</button>
@@ -224,67 +228,68 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-se
 
 <script>
 /* ============================================================
-   SERVICE WORKER — БОТ РАБОТАЕТ В ФОНЕ
+   SERVICE WORKER
    ============================================================ */
-const SW_CODE = `
-let lastTick = Date.now();
-let clickPower = 1;
-let botActive = false;
-let boostActive = false;
-self.addEventListener('install', () => self.skipWaiting());
-self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
-self.addEventListener('message', e => {
-    if(e.data.type === 'UPDATE') {
-        clickPower = e.data.clickPower || 1;
-        botActive = e.data.botActive || false;
-        boostActive = e.data.boostActive || false;
-        lastTick = Date.now();
-    }
-    if(e.data.type === 'GET_EARNINGS') {
-        const now = Date.now();
-        const diffSec = (now - lastTick) / 1000;
-        const multiplier = boostActive ? 50 : 1;
-        const earned = botActive ? Math.floor(diffSec * clickPower * multiplier) : 0;
-        lastTick = now;
-        e.source.postMessage({type:'EARNINGS', amount: earned, seconds: Math.floor(diffSec)});
-    }
-});
-setInterval(() => { if(botActive) lastTick = Date.now(); }, 10000);
-`;
-
-let swRegistration = null;
-async function registerSW() {
-    try {
-        const blob = new Blob([SW_CODE], {type:'application/javascript'});
-        const swUrl = URL.createObjectURL(blob);
-        swRegistration = await navigator.serviceWorker.register(swUrl);
-    } catch(e) { console.log('SW fallback'); }
-}
-function updateSW() {
-    if(swRegistration && swRegistration.active) {
-        swRegistration.active.postMessage({type:'UPDATE',clickPower:state.clickPower,botActive:state.hasAutoClicker&&state.botActive,boostActive:state.boostActive});
-    }
-}
-async function getOfflineEarnings() {
-    return new Promise(resolve => {
-        if(swRegistration && swRegistration.active) {
-            const handler = e => { if(e.data.type==='EARNINGS'){navigator.serviceWorker.removeEventListener('message',handler);resolve(e.data);} };
-            navigator.serviceWorker.addEventListener('message',handler);
-            swRegistration.active.postMessage({type:'GET_EARNINGS'});
-            setTimeout(()=>{navigator.serviceWorker.removeEventListener('message',handler);resolve(null);},3000);
-        } else resolve(null);
-    });
-}
+const SW_CODE=`let lastTick=Date.now(),clickPower=1,botActive=false,boostActive=false;self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('message',e=>{if(e.data.type==='UPDATE'){clickPower=e.data.clickPower||1;botActive=e.data.botActive||false;boostActive=e.data.boostActive||false;lastTick=Date.now();}if(e.data.type==='GET_EARNINGS'){const now=Date.now(),diffSec=(now-lastTick)/1000,multiplier=boostActive?50:1,earned=botActive?Math.floor(diffSec*clickPower*multiplier):0;lastTick=now;e.source.postMessage({type:'EARNINGS',amount:earned,seconds:Math.floor(diffSec)});}});setInterval(()=>{if(botActive)lastTick=Date.now();},10000);`;
+let swReg=null;
+async function registerSW(){try{const b=new Blob([SW_CODE],{type:'application/javascript'});swReg=await navigator.serviceWorker.register(URL.createObjectURL(b));}catch(e){}}
+function updateSW(){if(swReg&&swReg.active)swReg.active.postMessage({type:'UPDATE',clickPower:state.clickPower,botActive:state.hasAutoClicker&&state.botActive,boostActive:state.boostActive});}
+async function getOfflineEarnings(){return new Promise(r=>{if(swReg&&swReg.active){const h=e=>{if(e.data.type==='EARNINGS'){navigator.serviceWorker.removeEventListener('message',h);r(e.data);}};navigator.serviceWorker.addEventListener('message',h);swReg.active.postMessage({type:'GET_EARNINGS'});setTimeout(()=>{navigator.serviceWorker.removeEventListener('message',h);r(null);},3000);}else r(null);});}
 
 /* ============================================================
-   SUPABASE
+   SUPABASE + REALTIME
    ============================================================ */
-const supabaseClient = window.supabase.createClient('https://ombdrdqtojyevdqylhfs.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tYmRyZHF0b2p5ZXZkcXlsaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NTkxMTUsImV4cCI6MjEwNTEzNTExNX0.XaW5iFVShW1mizWp9l3RZX7wY8jpwNJG7_OdY0_Jauk');
+const supabaseClient=window.supabase.createClient('https://ombdrdqtojyevdqylhfs.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tYmRyZHF0b2p5ZXZkcXlsaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NTkxMTUsImV4cCI6MjEwNTEzNTExNX0.XaW5iFVShW1mizWp9l3RZX7wY8jpwNJG7_OdY0_Jauk');
 async function saveScoreToCloud(n,s){try{await supabaseClient.from('leaders').upsert({username:n,score:s},{onConflict:'username'});}catch(e){}}
 
+/* === REALTIME LEADERBOARD === */
 let leadersCache=[],totalPlayersCache=0,cacheLoaded=false;
-async function preloadLeaders(){try{const[lr,cr]=await Promise.all([supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),supabaseClient.from('leaders').select('*',{count:'exact',head:true})]);if(lr.data)leadersCache=lr.data;if(cr.count!==null)totalPlayersCache=cr.count;cacheLoaded=true;}catch(e){}}
-setInterval(async()=>{try{const[lr,cr]=await Promise.all([supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),supabaseClient.from('leaders').select('*',{count:'exact',head:true})]);if(lr.data)leadersCache=lr.data;if(cr.count!==null)totalPlayersCache=cr.count;if($('screen-leaderboard')&&$('screen-leaderboard').classList.contains('active'))renderLeadersFromCache();}catch(e){}},15000);
+let realtimeChannel=null;
+
+async function preloadLeaders(){
+    try{
+        const[lr,cr]=await Promise.all([
+            supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),
+            supabaseClient.from('leaders').select('*',{count:'exact',head:true})
+        ]);
+        if(lr.data)leadersCache=lr.data;
+        if(cr.count!==null)totalPlayersCache=cr.count;
+        cacheLoaded=true;
+    }catch(e){}
+    startRealtime();
+}
+
+function startRealtime(){
+    if(realtimeChannel)supabaseClient.removeChannel(realtimeChannel);
+    realtimeChannel=supabaseClient
+        .channel('leaders-live')
+        .on('postgres_changes',{event:'*',schema:'public',table:'leaders'},payload=>{
+            handleRealtimeUpdate(payload);
+        })
+        .subscribe(status=>console.log('Realtime:',status));
+}
+
+function handleRealtimeUpdate(payload){
+    const n=payload.new, o=payload.old;
+    if(payload.eventType==='INSERT'){
+        if(!leadersCache.find(l=>l.username===n.username)){
+            leadersCache.push({username:n.username,score:n.score});
+            totalPlayersCache++;
+        }
+    }else if(payload.eventType==='UPDATE'){
+        const idx=leadersCache.findIndex(l=>l.username===n.username);
+        if(idx!==-1)leadersCache[idx].score=n.score;
+        else leadersCache.push({username:n.username,score:n.score});
+    }else if(payload.eventType==='DELETE'){
+        leadersCache=leadersCache.filter(l=>l.username!==o.username);
+        totalPlayersCache=Math.max(0,totalPlayersCache-1);
+    }
+    leadersCache.sort((a,b)=>b.score-a.score);
+    if(leadersCache.length>20)leadersCache=leadersCache.slice(0,20);
+    // Мгновенно обновляем экран если открыт
+    const lb=document.getElementById('screen-leaderboard');
+    if(lb&&lb.classList.contains('active'))renderLeadersFromCache();
+}
 
 /* ============================================================
    DATA
@@ -292,7 +297,7 @@ setInterval(async()=>{try{const[lr,cr]=await Promise.all([supabaseClient.from('l
 const SVG_ICONS={n:'<svg viewBox="0 0 100 100"><path d="M30 20 V80 H45 V45 L70 80 H85 V20 H70 V55 L45 20 H30 Z" fill="#fff" stroke="rgba(0,0,0,.2)" stroke-width="2"/></svg>',pizza:'<svg viewBox="0 0 100 100"><path d="M50 10 L90 80 H10 Z" fill="#ffcc00" stroke="#ff9900" stroke-width="3"/><circle cx="50" cy="40" r="5" fill="#f00"/><circle cx="40" cy="60" r="5" fill="#f00"/><circle cx="60" cy="60" r="5" fill="#f00"/></svg>',cat:'<svg viewBox="0 0 100 100"><path d="M20 30 L30 10 L40 30 H60 L70 10 L80 30 V70 Q50 90 20 70 Z" fill="#aaa" stroke="#fff" stroke-width="2"/><circle cx="35" cy="45" r="5" fill="#000"/><circle cx="65" cy="45" r="5" fill="#000"/><path d="M45 55 Q50 60 55 55" stroke="#000" stroke-width="2" fill="none"/></svg>',diamond:'<svg viewBox="0 0 100 100"><path d="M50 10 L80 40 L50 90 L20 40 Z" fill="#0ff" stroke="#fff" stroke-width="2"/><path d="M20 40 H80" stroke="#fff" stroke-width="2"/><path d="M50 10 L35 40 L50 90 L65 40 Z" fill="rgba(255,255,255,.3)"/></svg>'};
 const THEMES=[{id:'default',name:'Фиолет',class:'',color:'#7000ff'},{id:'green',name:'Матрица',class:'theme-green',color:'#00ff41'},{id:'pink',name:'Кибер',class:'theme-pink',color:'#ff00ff'}];
 const ICONS=[{id:'n',name:'Буква N'},{id:'pizza',name:'Пицца'},{id:'cat',name:'Кот'},{id:'diamond',name:'Алмаз'}];
-const UPGRADES=[{id:'click',icon:'👆',name:'Сила клика',desc:'+1 NOVA за клик',baseCost:100,costMul:1.5,profit:1,type:'click'},{id:'tank',icon:'🔋',name:'Бак энергии',desc:'+1000 макс. энергии',baseCost:200,costMul:1.6,profit:1000,type:'max'},{id:'regen',icon:'⚡',name:'Регенерация',desc:'+1 энергия/сек',baseCost:150,costMul:1.5,profit:1,type:'regen'},{id:'autoclicker',icon:'🤖',name:'Автокликер (Бот)',desc:'1 раз/сек. Не тратит энергию!',baseCost:10000,costMul:1,profit:1,type:'auto',oneTime:true}];
+const UPGRADES=[{id:'click',icon:'👆',name:'Сила клика',desc:'+1 NOVA за клик',baseCost:100,costMul:1.5,profit:1,type:'click'},{id:'tank',icon:'🔋',name:'Бак энергии',desc:'+1000 макс.',baseCost:200,costMul:1.6,profit:1000,type:'max'},{id:'regen',icon:'⚡',name:'Регенерация',desc:'+1 энергия/сек',baseCost:150,costMul:1.5,profit:1,type:'regen'},{id:'autoclicker',icon:'🤖',name:'Автокликер (Бот)',desc:'1 раз/сек. Без энергии!',baseCost:10000,costMul:1,profit:1,type:'auto',oneTime:true}];
 const TASKS=[{id:'sub',name:'Подписка на канал',reward:5000},{id:'inv',name:'Пригласить друга',reward:10000}];
 
 let playerName='';
@@ -311,30 +316,19 @@ async function startGame(){
     updateUI();startLoops();preloadLeaders();updateSW();
 }
 
-/* === БЕЗ ЛИМИТА — ВСЁ ВРЕМЯ ОТСУТСТВИЯ === */
 async function checkOfflineEarnings(){
-    // Способ 1: Service Worker
     const sw=await getOfflineEarnings();
     if(sw&&sw.amount>0){state.score+=sw.amount;showOfflinePopup(sw.amount,sw.seconds);return;}
-    // Способ 2: localStorage fallback — БЕЗ ЛИМИТА
     if(state.hasAutoClicker&&state.botActive){
-        const now=Date.now();
-        const diffSec=(now-state.lastSave)/1000; // Нет ограничения!
-        if(diffSec>5){
-            const earned=Math.floor(diffSec*state.clickPower);
-            if(earned>0){state.score+=earned;showOfflinePopup(earned,Math.floor(diffSec));}
-        }
+        const diffSec=(Date.now()-state.lastSave)/1000;
+        if(diffSec>5){const earned=Math.floor(diffSec*state.clickPower);if(earned>0){state.score+=earned;showOfflinePopup(earned,Math.floor(diffSec));}}
     }
 }
 
 function showOfflinePopup(amount,seconds){
-    let timeStr;
-    if(seconds>=86400){const d=Math.floor(seconds/86400);const h=Math.floor((seconds%86400)/3600);timeStr=d+' дн. '+h+' ч.';}
-    else if(seconds>=3600){const h=Math.floor(seconds/3600);const m=Math.floor((seconds%3600)/60);timeStr=h+' ч. '+m+' мин.';}
-    else if(seconds>=60){const m=Math.floor(seconds/60);const s=seconds%60;timeStr=m+' мин. '+s+' сек.';}
-    else{timeStr=seconds+' сек.';}
+    let t;if(seconds>=86400){const d=Math.floor(seconds/86400),h=Math.floor((seconds%86400)/3600);t=d+' дн. '+h+' ч.';}else if(seconds>=3600){t=Math.floor(seconds/3600)+' ч. '+Math.floor((seconds%3600)/60)+' мин.';}else if(seconds>=60){t=Math.floor(seconds/60)+' мин. '+seconds%60+' сек.';}else{t=seconds+' сек.';}
     const p=document.createElement('div');p.className='offline-popup';
-    p.innerHTML=`<div class="offline-box"><h2>🤖 Бот работал!</h2><p style="color:var(--text-sec)">Вы отсутствовали ${timeStr}</p><div class="amount">+${amount.toLocaleString()} NOVA</div><button onclick="this.closest('.offline-popup').remove()">Забрать</button></div>`;
+    p.innerHTML=`<div class="offline-box"><h2>🤖 Бот работал!</h2><p style="color:var(--text-sec)">Вы отсутствовали ${t}</p><div class="amount">+${amount.toLocaleString()} NOVA</div><button onclick="this.closest('.offline-popup').remove()">Забрать</button></div>`;
     document.body.appendChild(p);
 }
 
@@ -344,6 +338,8 @@ function startLoops(){
     setInterval(()=>{if(state.hasAutoClicker&&state.botActive){let g=state.clickPower*(state.boostActive?50:1);addScore(g);const r=els.mainCoin.getBoundingClientRect();showFloat(r.left+r.width/2+(Math.random()*40-20),r.top+r.height/2+(Math.random()*40-20),`+${Math.floor(g)}`);els.mainCoin.classList.add('coin-pressed');setTimeout(()=>els.mainCoin.classList.remove('coin-pressed'),100);}},1000);
     setInterval(()=>{if(state.energy<state.maxEnergy){state.energy=Math.min(state.maxEnergy,state.energy+state.regen);updateEnergy();}},1000);
     setInterval(()=>{save();updateSW();},5000);
+    // Сохраняем в облако каждые 2 сек для реалтайма
+    setInterval(()=>{if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));},2000);
     scheduleRocket();
 }
 
@@ -357,8 +353,37 @@ function renderUpgrades(){els.upgrades.innerHTML='';UPGRADES.forEach(u=>{const l
 function renderTasks(){els.tasks.innerHTML='';TASKS.forEach(t=>{const done=state.tasksDone.includes(t.id);const d=document.createElement('div');d.className=`list-card ${done?'disabled':''}`;d.onclick=()=>doTask(t);d.innerHTML=`<div class="card-icon" style="font-size:1.5rem">🎁</div><div class="card-info"><div class="card-title">${t.name}</div><div class="card-desc">+${t.reward.toLocaleString()}</div></div><div class="card-action"><div class="card-cost" style="color:${done?'#888':'var(--accent)'}">${done?'✅':'Забрать'}</div></div>`;els.tasks.appendChild(d);});}
 function renderSkins(){els.themes.innerHTML='';THEMES.forEach(t=>{const d=document.createElement('div');d.className=`skin-item ${state.theme===t.id?'selected':''}`;d.onclick=()=>setTheme(t.id);d.innerHTML=`<div class="skin-preview" style="background:${t.color};border-radius:50%;width:40px;height:40px"></div><div class="skin-name">${t.name}</div>`;els.themes.appendChild(d);});els.icons.innerHTML='';ICONS.forEach(i=>{const d=document.createElement('div');d.className=`skin-item ${state.icon===i.id?'selected':''}`;d.onclick=()=>setIcon(i.id);d.innerHTML=`<div class="skin-preview">${SVG_ICONS[i.id]}</div><div class="skin-name">${i.name}</div>`;els.icons.appendChild(d);});}
 
-function renderLeadersFromCache(){els.leaders.innerHTML='';const td=document.createElement('div');td.className='lb-total';td.innerHTML=`Всего игроков: <span>${totalPlayersCache}</span>`;els.leaders.appendChild(td);if(!leadersCache.length){els.leaders.innerHTML+='<div class="lb-loading">Пока нет игроков. Будьте первым!</div>';return;}let myRank=-1;leadersCache.forEach((l,i)=>{if(l.username===playerName)myRank=i;});leadersCache.forEach((l,i)=>{const isMe=l.username===playerName;const d=document.createElement('div');d.className='lb-item'+(isMe?' lb-me':'');let rk=i+1;if(i===0)rk='🥇';else if(i===1)rk='🥈';else if(i===2)rk='🥉';const dn=l.username.length>14?l.username.substring(0,12)+'..':l.username;d.innerHTML=`<div class="lb-rank">${rk}</div><div class="lb-name" style="${isMe?'color:var(--accent)':''}">${dn} ${isMe?'(Вы)':''}</div><div class="lb-score">${Math.floor(l.score).toLocaleString()}</div>`;els.leaders.appendChild(d);});if(myRank===-1&&playerName){els.leaders.innerHTML+='<div style="text-align:center;padding:8px;color:var(--text-sec);font-size:.8rem">...</div>';const md=leadersCache.find(l=>l.username===playerName);const ms=md?md.score:state.score;const mp=md?(leadersCache.filter(l=>l.score>md.score).length+1):'?';const d=document.createElement('div');d.className='lb-item lb-me';d.innerHTML=`<div class="lb-rank">${mp}</div><div class="lb-name" style="color:var(--accent)">${playerName} (Вы)</div><div class="lb-score">${Math.floor(ms).toLocaleString()}</div>`;els.leaders.appendChild(d);}}
-async function renderLeaders(){if(cacheLoaded)renderLeadersFromCache();else els.leaders.innerHTML='<div class="lb-loading">⏳ Загрузка...</div>';try{const[lr,cr]=await Promise.all([supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),supabaseClient.from('leaders').select('*',{count:'exact',head:true})]);if(lr.data)leadersCache=lr.data;if(cr.count!==null)totalPlayersCache=cr.count;cacheLoaded=true;renderLeadersFromCache();}catch(e){if(!cacheLoaded)els.leaders.innerHTML='<div class="lb-loading">❌ Ошибка загрузки</div>';}}
+/* === LEADERBOARD === */
+function renderLeadersFromCache(){
+    els.leaders.innerHTML='';
+    const td=document.createElement('div');td.className='lb-total';td.innerHTML=`Всего игроков: <span>${totalPlayersCache}</span>`;els.leaders.appendChild(td);
+    if(!leadersCache.length){els.leaders.innerHTML+='<div class="lb-loading">Пока нет игроков. Будьте первым!</div>';return;}
+    let myRank=-1;leadersCache.forEach((l,i)=>{if(l.username===playerName)myRank=i;});
+    leadersCache.forEach((l,i)=>{
+        const isMe=l.username===playerName;const d=document.createElement('div');d.className='lb-item'+(isMe?' lb-me':'');
+        let rk=i+1;if(i===0)rk='🥇';else if(i===1)rk='🥈';else if(i===2)rk='🥉';
+        const dn=l.username.length>14?l.username.substring(0,12)+'..':l.username;
+        d.innerHTML=`<div class="lb-rank">${rk}</div><div class="lb-name" style="${isMe?'color:var(--accent)':''}">${dn} ${isMe?'(Вы)':''}</div><div class="lb-score">${Math.floor(l.score).toLocaleString()}</div>`;
+        els.leaders.appendChild(d);
+    });
+    if(myRank===-1&&playerName){
+        els.leaders.innerHTML+='<div style="text-align:center;padding:8px;color:var(--text-sec);font-size:.8rem">...</div>';
+        const md=leadersCache.find(l=>l.username===playerName);const ms=md?md.score:state.score;
+        const mp=md?(leadersCache.filter(l=>l.score>md.score).length+1):'?';
+        const d=document.createElement('div');d.className='lb-item lb-me';
+        d.innerHTML=`<div class="lb-rank">${mp}</div><div class="lb-name" style="color:var(--accent)">${playerName} (Вы)</div><div class="lb-score">${Math.floor(ms).toLocaleString()}</div>`;
+        els.leaders.appendChild(d);
+    }
+}
+
+async function renderLeaders(){
+    if(cacheLoaded)renderLeadersFromCache();
+    else els.leaders.innerHTML='<div class="lb-loading">⏳ Загрузка...</div>';
+    try{
+        const[lr,cr]=await Promise.all([supabaseClient.from('leaders').select('username,score').order('score',{ascending:false}).limit(20),supabaseClient.from('leaders').select('*',{count:'exact',head:true})]);
+        if(lr.data)leadersCache=lr.data;if(cr.count!==null)totalPlayersCache=cr.count;cacheLoaded=true;renderLeadersFromCache();
+    }catch(e){if(!cacheLoaded)els.leaders.innerHTML='<div class="lb-loading">❌ Ошибка</div>';}
+}
 
 function buyUpgrade(u){const lvl=state.levels[u.id]||0,cost=Math.floor(u.baseCost*Math.pow(u.costMul,lvl));if(state.score<cost)return;state.score-=cost;if(u.oneTime){state.hasAutoClicker=true;state.botActive=true;updateBotIndicator();}else{state.levels[u.id]=lvl+1;if(u.type==='click')state.clickPower+=u.profit;if(u.type==='max')state.maxEnergy+=u.profit;if(u.type==='regen')state.regen+=u.profit;}updateUI();renderUpgrades();save();updateSW();if(navigator.vibrate)navigator.vibrate(30);}
 function toggleBot(e){e.stopPropagation();state.botActive=!state.botActive;updateBotIndicator();renderUpgrades();save();updateSW();if(navigator.vibrate)navigator.vibrate(10);}
@@ -382,8 +407,8 @@ function updateScore(){els.score.textContent=Math.floor(state.score).toLocaleStr
 function updateEnergy(){els.energyCur.textContent=Math.floor(state.energy);els.energyMax.textContent=state.maxEnergy;els.energyFill.style.width=(state.energy/state.maxEnergy*100)+'%';}
 function showFloat(x,y,txt){const el=document.createElement('div');el.className='float-text';el.textContent=txt;el.style.left=(x-20)+'px';el.style.top=(y-20)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),700);}
 
-function save(){state.lastSave=Date.now();localStorage.setItem('nova_v15_nolimit',JSON.stringify(state));if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));updateSW();}
-function load(){let raw=localStorage.getItem('nova_v15_nolimit')||localStorage.getItem('nova_v14_sw')||localStorage.getItem('nova_v13_cache');if(!raw)return;try{const p=JSON.parse(raw);state={...state,...p};if(state.hasAutoClicker&&state.botActive===undefined)state.botActive=true;if(state.boostActive&&Date.now()>state.boostEndTime)state.boostActive=false;state.energy=Math.min(state.energy,state.maxEnergy);}catch(e){}}
+function save(){state.lastSave=Date.now();localStorage.setItem('nova_v16_realtime',JSON.stringify(state));if(playerName)saveScoreToCloud(playerName,Math.floor(state.score));updateSW();}
+function load(){let raw=localStorage.getItem('nova_v16_realtime')||localStorage.getItem('nova_v15_nolimit')||localStorage.getItem('nova_v14_sw');if(!raw)return;try{const p=JSON.parse(raw);state={...state,...p};if(state.hasAutoClicker&&state.botActive===undefined)state.botActive=true;if(state.boostActive&&Date.now()>state.boostEndTime)state.boostActive=false;state.energy=Math.min(state.energy,state.maxEnergy);}catch(e){}}
 
 document.addEventListener('visibilitychange',()=>{if(document.hidden){save();updateSW();}});
 window.addEventListener('beforeunload',()=>{save();updateSW();});
